@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -107,24 +106,4 @@ func User(c *fiber.Ctx) error {
 	database.DB.Where("id = ?", claims.Issuer).First(&user)
 
 	return c.JSON(user)
-}
-
-
-// Field names should start with an uppercase letter
-type Person struct {
-    Name string `json:"name" xml:"name" form:"name"`
-    Pass string `json:"pass" xml:"pass" form:"pass"`
-}
-
-func Test(c *fiber.Ctx) error {
-        p := new(Person)
-
-        if err := c.BodyParser(p); err != nil {
-            return err
-        }
-
-        fmt.Println(p.Name) // john
-        fmt.Println(p.Pass) // doe
-
-	return c.SendString("Where is john?")
 }
