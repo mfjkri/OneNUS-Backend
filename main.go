@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/One-NUS-Backend/database"
+	"github.com/mfjkri/One-NUS-Backend/routes"
 	"github.com/mfjkri/One-NUS-Backend/run"
 )
 
@@ -15,10 +16,6 @@ func init() {
 
 func main() {
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	routes.SetupRoutes(r)
 	r.Run()
 }
