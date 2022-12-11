@@ -1,14 +1,19 @@
 package main
 
 import (
+	"os"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/One-NUS-Backend/database"
 	"github.com/mfjkri/One-NUS-Backend/routes"
+	"github.com/mfjkri/One-NUS-Backend/run"
 )
 
 func init() {
-	// run.LoadEnv()
+	if os.Getenv("DEPLOYED_MODE") == "" {
+		run.LoadEnv()
+	}
 	database.Connect()
 	database.Migrate()
 
