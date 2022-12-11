@@ -21,7 +21,10 @@ func init() {
 
 func CORSConfig() cors.Config {
     corsConfig := cors.DefaultConfig()
-    corsConfig.AllowOrigins = []string{"http://localhost:3000"}
+    corsConfig.AllowOrigins = []string{
+		"http://localhost:3000",
+		"http://192.168.0.100:3000",
+	}
     corsConfig.AllowCredentials = true
     corsConfig.AddAllowHeaders("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers", "Content-Type", "X-XSRF-TOKEN", "Accept", "Origin", "X-Requested-With", "Authorization")
     corsConfig.AddAllowMethods("GET", "POST", "PUT", "DELETE")
