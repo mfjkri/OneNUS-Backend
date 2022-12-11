@@ -5,11 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/One-NUS-Backend/database"
 	"github.com/mfjkri/One-NUS-Backend/routes"
-	"github.com/mfjkri/One-NUS-Backend/run"
 )
 
 func init() {
-	run.LoadEnv()
+	// run.LoadEnv()
 	database.Connect()
 	database.Migrate()
 
