@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/One-NUS-Backend/database"
 	"github.com/mfjkri/One-NUS-Backend/routes"
@@ -15,7 +16,8 @@ func init() {
 }
 
 func main() {
-	r := gin.Default()
-	routes.SetupRoutes(r)
-	r.Run()
+	router := gin.Default()
+	router.Use(cors.Default())
+	routes.SetupRoutes(router)
+	router.Run()
 }
