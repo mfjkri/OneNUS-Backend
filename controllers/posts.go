@@ -23,9 +23,9 @@ func verifyTag(tag string) (valid bool) {
 }
 
 type CreatePostRequest struct {
-	Title			string	`json:"title"`
-	Tag				string 	`json:"tag"`
-	Text 			string	`json:"text"`
+	Title			string	`json:"title" binding:"required"`
+	Tag				string 	`json:"tag" binding:"required"`
+	Text 			string	`json:"text" binding:"required"`
 }
 
 // CreatePost | route:/post/create
