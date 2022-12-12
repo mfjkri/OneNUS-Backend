@@ -7,17 +7,70 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/One-NUS-Backend/database"
 	"github.com/mfjkri/One-NUS-Backend/models"
+	"github.com/mfjkri/One-NUS-Backend/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Register struct {
+
+
+type UserAuth struct {
+	Id     		uint 	`json:"id" binding:"required"`
+	Username 	string 	`json:"username" binding:"required"`
+}
+
+
+func VerifyAuth(c *gin.Context) (user UserAuth, found bool) {
+	jwt_token := c.Request.Header.Get("authorization");
+	found = false
+
+	if jwt_token == "" {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No authorization token provided."})
+      	return 
+	}
+
+	
+	username, err := utils.DecodeJWT(jwt_token)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Unable to decoded authorization token."})
+      	return 
+	}
+
+	var target_user models.User
+    database.DB.First(&target_user, "username = ?", strings.ToLower(username))
+
+	if target_user.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Unauthorized."})
+      	return 
+	}
+
+	found = true
+	user = UserAuth{
+		Id : target_user.ID,
+		Username:  target_user.Username,
+	}
+	return
+
+}
+
+func CreateUserResponse(c *gin.Context, http_status uint, jwt string, id uint, username string) {
+	c.JSON(int(http_status), gin.H{
+		"status": "Success",
+		"jwt": jwt,
+		"user": gin.H{
+			"id": id,
+			"username": username,
+		},
+	})
+}
+
+type RegisterRequest struct {
 	Username	string 	`form:"username" json:"username" binding:"required"`
 	Password	string 	`form:"password" json:"password" binding:"required"`
 }
 
-func RegisterJSON(c *gin.Context) {
+func RegisterUser(c *gin.Context) {
 	// Parse RequestBody 
-	var json Register
+	var json RegisterRequest
     if err := c.ShouldBindJSON(&json); err != nil {
       c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
       return
@@ -42,7 +95,7 @@ func RegisterJSON(c *gin.Context) {
 	}
 
 	// Generate JWT Token
-	jwt, err := GenerateJWT(username_lowered)
+	jwt, err := utils.GenerateJWT(username_lowered)
 	if err != nil {
 		c.JSON(http.StatusExpectationFailed, gin.H{"message": "Failed to create access token."})
       	return
@@ -52,14 +105,14 @@ func RegisterJSON(c *gin.Context) {
     CreateUserResponse(c, http.StatusOK, jwt, user.ID, user.Username)
 }
 
-type Login struct {
+type LoginRequest struct {
 	Username	string 	`form:"username" json:"username" binding:"required"`
 	Password 	string 	`form:"password" json:"password" binding:"required"`
 }
 
-func LoginJSON(c *gin.Context) {
+func LoginUser(c *gin.Context) {
 	// Parse RequestBody 	
-	var json Login
+	var json LoginRequest
     if err := c.ShouldBindJSON(&json); err != nil {
       c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
       return
@@ -81,7 +134,7 @@ func LoginJSON(c *gin.Context) {
       	return
 	}
 
-	jwt, err := GenerateJWT(username_lowered)
+	jwt, err := utils.GenerateJWT(username_lowered)
 	if err != nil {
 		c.JSON(http.StatusExpectationFailed, gin.H{"message": "Failed to create access token."})
       	return
@@ -91,13 +144,16 @@ func LoginJSON(c *gin.Context) {
     CreateUserResponse(c, http.StatusOK, jwt, user.ID, user.Username)
 }
 
-func GetUserJSON(c *gin.Context) {
-	user, found := RequireAuth(c)
+func GetUser(c *gin.Context) {
+	user, found := VerifyAuth(c)
 
 	if found == false {
 		return
 	}
 
 	// Success, user found
-	CreateUserResponseNoJWT(c, http.StatusAccepted, user.Id, user.Username)
+	c.JSON(http.StatusAccepted, gin.H{
+		"id": user.Id,
+		"username": user.Username,
+	})
 }

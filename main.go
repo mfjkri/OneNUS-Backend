@@ -7,12 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/One-NUS-Backend/database"
 	"github.com/mfjkri/One-NUS-Backend/routes"
-	"github.com/mfjkri/One-NUS-Backend/run"
+	"github.com/mfjkri/One-NUS-Backend/utils"
 )
 
 func init() {
 	if os.Getenv("DEPLOYED_MODE") == "" {
-		run.LoadEnv()
+		utils.LoadEnv()
 	}
 	database.Connect()
 	database.Migrate()

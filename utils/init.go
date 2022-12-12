@@ -1,4 +1,4 @@
-package run
+package utils
 
 import (
 	"fmt"
@@ -13,3 +13,4 @@ func LoadEnv() {
 
 	fmt.Println("Successfully import .env variables...")
 }
+
