@@ -6,10 +6,16 @@ import (
 )
 
 func SetupRoutes(r *gin.Engine) {
+	// auth.go
 	r.POST("auth/register", controllers.RegisterUser)
 	r.POST("auth/login", controllers.LoginUser)
 	r.GET("auth/me", controllers.GetUser)
+
+	// posts.go
+	r.POST("posts/create", controllers.CreatePost)
+	r.GET("posts/get", controllers.GetPosts)
 	
+	// misc
 	r.GET("ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong 1",

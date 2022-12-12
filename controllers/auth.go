@@ -18,7 +18,7 @@ type UserAuth struct {
 	Username 	string 	`json:"username" binding:"required"`
 }
 
-
+// Helper function to verify RequestUser using their JWT token
 func VerifyAuth(c *gin.Context) (user UserAuth, found bool) {
 	jwt_token := c.Request.Header.Get("authorization");
 	found = false
@@ -52,6 +52,7 @@ func VerifyAuth(c *gin.Context) (user UserAuth, found bool) {
 
 }
 
+// Helper function to generate JSONResponse
 func CreateUserResponse(c *gin.Context, http_status uint, jwt string, id uint, username string) {
 	c.JSON(int(http_status), gin.H{
 		"status": "Success",
@@ -68,6 +69,7 @@ type RegisterRequest struct {
 	Password	string 	`form:"password" json:"password" binding:"required"`
 }
 
+// RegisterUser | route:/auth/register
 func RegisterUser(c *gin.Context) {
 	// Parse RequestBody 
 	var json RegisterRequest
@@ -110,6 +112,7 @@ type LoginRequest struct {
 	Password 	string 	`form:"password" json:"password" binding:"required"`
 }
 
+// LoginUser | route:/auth/login
 func LoginUser(c *gin.Context) {
 	// Parse RequestBody 	
 	var json LoginRequest
@@ -144,9 +147,10 @@ func LoginUser(c *gin.Context) {
     CreateUserResponse(c, http.StatusOK, jwt, user.ID, user.Username)
 }
 
+// GetUser | route:/auth/me
 func GetUser(c *gin.Context) {
+	// Check that RequestUser is authenticated
 	user, found := VerifyAuth(c)
-
 	if found == false {
 		return
 	}
