@@ -28,11 +28,13 @@ func verifyTag(tag string) (valid bool) {
 }
 
 type PostResponse struct {
-    ID   	uint   	`json:"id" binding:"required"`
-    Title	string	`json:"title" binding:"required"`
-	Tag		string	`json:"tag" binding:"required"`
-	Text	string	`json:"text" binding:"required"`
-	Author	string	`json:"author" binding:"required"`
+    ID   			uint   		`json:"id" binding:"required"`
+    Title			string		`json:"title" binding:"required"`
+	Tag				string		`json:"tag" binding:"required"`
+	Text			string		`json:"text" binding:"required"`
+	Author			string		`json:"author" binding:"required"`
+	RepliesCount	uint		`json:"repliesCount" binding:"required"`
+	UpdatedAt		time.Time	`json:"updatedAt" binding:"required"` 
 }
 
 type GetPostsResponse struct {
@@ -47,6 +49,8 @@ func CreatePostResponse(post *models.Post) PostResponse {
 		Tag: post.Tag,
 		Text: post.Text,
 		Author: post.Author,
+		RepliesCount: post.RepliesCount,
+		UpdatedAt: post.UpdatedAt,
 	}
 }
 
@@ -138,10 +142,10 @@ const (
 )
 
 type GetPostsRequest struct {
-	PerPage		uint 	`form:"perPage" json:"perPage" binding:"required"`
-	PageNumber 	uint 	`form:"pageNumber" json:"pageNumber" binding:"required"`
-	SortBy 		string 	`form:"sortBy" json:"sortBy"`
-	FilterTag 	string 	`form:"filterTag" json:"filterTag"`
+	PerPage		uint 	`uri:"perPage" form:"perPage" json:"perPage" binding:"required"`
+	PageNumber 	uint 	`uri:"pageNumber" form:"pageNumber" json:"pageNumber" binding:"required"`
+	SortBy 		string 	`uri:"sortBy" form:"sortBy" json:"sortBy"`
+	FilterTag 	string 	`uri:"filterTag" form:"filterTag" json:"filterTag"`
 }
 
 func GetPosts(c *gin.Context) {
@@ -153,7 +157,7 @@ func GetPosts(c *gin.Context) {
 
 	// Parse RequestBody 
 	var json GetPostsRequest
-    if err := c.ShouldBindJSON(&json); err != nil {
+    if err := c.ShouldBindUri(&json); err != nil {
       c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
       return
     }
