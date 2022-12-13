@@ -37,10 +37,6 @@ type PostResponse struct {
 	UpdatedAt		int64		`json:"updatedAt" binding:"required"` 
 }
 
-type GetPostsResponse struct {
-    Posts	[]PostResponse 	`json:"posts" binding:"required"`
-}
-
 // Convert a Post Model into a JSON format
 func CreatePostResponse(post *models.Post) PostResponse {
 	return PostResponse{
@@ -54,8 +50,13 @@ func CreatePostResponse(post *models.Post) PostResponse {
 	}
 }
 
+type GetPostsResponse struct {
+    Posts		[]PostResponse 	`json:"posts" binding:"required"`
+	PostsCount 	int64			`json:"postsCount" binding:"required"`
+}
+
 // Bundles and convert multiple Post models into a JSON format
-func CreatePostsResponse(posts *[]models.Post) GetPostsResponse {
+func CreatePostsResponse(posts *[]models.Post, totalPostsCount int64) GetPostsResponse {
 	var postsResponse []PostResponse
 	for _, post := range (*posts) {
 		postReponse := CreatePostResponse(&post)
@@ -64,6 +65,7 @@ func CreatePostsResponse(posts *[]models.Post) GetPostsResponse {
 
 	return GetPostsResponse{
 		Posts: postsResponse,
+		PostsCount: totalPostsCount,
 	}
 }
 /* -------------------------------------------------------------------------- */
@@ -195,7 +197,7 @@ func GetPosts(c *gin.Context) {
 	dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetPostCount)).Find(&posts)
 
 	// Return fetched posts
-	c.JSON(http.StatusAccepted, CreatePostsResponse(&posts))
+	c.JSON(http.StatusAccepted, CreatePostsResponse(&posts, totalPostsCount))
 }
 /* -------------------------------------------------------------------------- */
 
