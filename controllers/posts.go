@@ -11,7 +11,9 @@ import (
 	"github.com/mfjkri/One-NUS-Backend/utils"
 )
 
-
+/* -------------------------------------------------------------------------- */
+/*                              Helper functions                              */
+/* -------------------------------------------------------------------------- */
 var ValidTags = [4]string{"general", "cs", "life", "misc"}
 
 func verifyTag(tag string) (valid bool) {
@@ -23,14 +25,17 @@ func verifyTag(tag string) (valid bool) {
 	}
 	return
 }
+/* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
+/*                        CreatePost | route: /post/get                       */
+/* -------------------------------------------------------------------------- */
 type CreatePostRequest struct {
 	Title			string	`json:"title" binding:"required"`
 	Tag				string 	`json:"tag" binding:"required"`
 	Text 			string	`json:"text" binding:"required"`
 }
 
-// CreatePost | route:/post/create
 func CreatePost(c *gin.Context) {
 	// Check that RequestUser is authenticated
 	user, found := VerifyAuth(c)
@@ -87,14 +92,16 @@ func CreatePost(c *gin.Context) {
 		"username": user.Username,
 	})
 }
+/* -------------------------------------------------------------------------- */
 
-
+/* -------------------------------------------------------------------------- */
+/*                        GetPosts | route: /posts/get                        */
+/* -------------------------------------------------------------------------- */
 type GetPostsRequest struct {
 	PerPage		uint 	`form:"perPage" json:"perPage" binding:"required"`
 	PageNumber 	uint 	`form:"pageNumber" json:"pageNumber" binding:"required"`
 }
 
-// GetPosts | route:/posts/get
 func GetPosts(c *gin.Context) {
 	// Check that RequestUser is authenticated
 	user, found := VerifyAuth(c)
@@ -132,5 +139,5 @@ func GetPosts(c *gin.Context) {
 		"id": user.ID,
 		"username": user.Username,
 	})
-
 }
+/* -------------------------------------------------------------------------- */

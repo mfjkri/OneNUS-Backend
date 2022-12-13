@@ -11,7 +11,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Helper function to verify RequestUser using their JWT token
+/* -------------------------------------------------------------------------- */
+/*                              Helper functions                              */
+/* -------------------------------------------------------------------------- */
+
+// Verify RequestUser using their JWT token
 func VerifyAuth(c *gin.Context) (user models.User, found bool) {
 	found = false
 	jwt_token := c.Request.Header.Get("authorization");
@@ -41,10 +45,9 @@ func VerifyAuth(c *gin.Context) (user models.User, found bool) {
 	found = true
 	user = target_user
 	return
-
 }
 
-// Helper function to generate JSONResponse
+// Generate JSONResponse with jwt, int, username
 func CreateUserResponse(c *gin.Context, http_status uint, jwt string, id uint, username string) {
 	c.JSON(int(http_status), gin.H{
 		"status": "Success",
@@ -55,13 +58,16 @@ func CreateUserResponse(c *gin.Context, http_status uint, jwt string, id uint, u
 		},
 	})
 }
+/* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
+/*                    RegisterUser | route: /auth/register                    */
+/* -------------------------------------------------------------------------- */
 type RegisterRequest struct {
 	Username	string 	`form:"username" json:"username" binding:"required"`
 	Password	string 	`form:"password" json:"password" binding:"required"`
 }
 
-// RegisterUser | route:/auth/register
 func RegisterUser(c *gin.Context) {
 	// Parse RequestBody 
 	var json RegisterRequest
@@ -104,13 +110,16 @@ func RegisterUser(c *gin.Context) {
 	// Success, registered and logged in
     CreateUserResponse(c, http.StatusOK, jwt, user.ID, user.Username)
 }
+/* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
+/*                       LoginUser | route: /auth/login                       */
+/* -------------------------------------------------------------------------- */
 type LoginRequest struct {
 	Username	string 	`form:"username" json:"username" binding:"required"`
 	Password 	string 	`form:"password" json:"password" binding:"required"`
 }
 
-// LoginUser | route:/auth/login
 func LoginUser(c *gin.Context) {
 	// Parse RequestBody 	
 	var json LoginRequest
@@ -144,8 +153,11 @@ func LoginUser(c *gin.Context) {
 	// Success, logged in
     CreateUserResponse(c, http.StatusOK, jwt, user.ID, user.Username)
 }
+/* -------------------------------------------------------------------------- */
 
-// GetUser | route:/auth/me
+/* -------------------------------------------------------------------------- */
+/*                          GetUser | route: /auth/me                         */
+/* -------------------------------------------------------------------------- */
 func GetUser(c *gin.Context) {
 	// Check that RequestUser is authenticated
 	user, found := VerifyAuth(c)
@@ -159,3 +171,4 @@ func GetUser(c *gin.Context) {
 		"username": user.Username,
 	})
 }
+/* -------------------------------------------------------------------------- */
