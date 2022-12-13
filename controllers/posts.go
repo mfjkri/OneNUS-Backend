@@ -34,7 +34,7 @@ type PostResponse struct {
 	Text			string		`json:"text" binding:"required"`
 	Author			string		`json:"author" binding:"required"`
 	RepliesCount	uint		`json:"repliesCount" binding:"required"`
-	UpdatedAt		time.Time	`json:"updatedAt" binding:"required"` 
+	UpdatedAt		int64		`json:"updatedAt" binding:"required"` 
 }
 
 type GetPostsResponse struct {
@@ -50,7 +50,7 @@ func CreatePostResponse(post *models.Post) PostResponse {
 		Text: post.Text,
 		Author: post.Author,
 		RepliesCount: post.RepliesCount,
-		UpdatedAt: post.UpdatedAt,
+		UpdatedAt: post.UpdatedAt.Unix(),
 	}
 }
 
