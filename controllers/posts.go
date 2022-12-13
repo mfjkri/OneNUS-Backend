@@ -69,7 +69,7 @@ func CreatePost(c *gin.Context) {
 
 	// Successfully created a new Post
 	c.JSON(http.StatusAccepted, gin.H{
-		"id": user.Id,
+		"id": user.ID,
 		"username": user.Username,
 	})
 }
@@ -113,10 +113,9 @@ func GetPosts(c *gin.Context) {
 	var posts []models.Post
 	database.DB.Limit(int(perPage)).Offset(int(offsetPostCount)).Find(&posts)
 
-
 	// Return fetched posts
 	c.JSON(http.StatusAccepted, gin.H{
-		"id": user.Id,
+		"id": user.ID,
 		"username": user.Username,
 	})
 

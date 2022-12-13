@@ -11,43 +11,35 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-
-
-type UserAuth struct {
-	Id     		uint 	`json:"id" binding:"required"`
-	Username 	string 	`json:"username" binding:"required"`
-}
-
 // Helper function to verify RequestUser using their JWT token
-func VerifyAuth(c *gin.Context) (user UserAuth, found bool) {
-	jwt_token := c.Request.Header.Get("authorization");
+func VerifyAuth(c *gin.Context) (user models.User, found bool) {
 	found = false
+	jwt_token := c.Request.Header.Get("authorization");
 
+	// Check for authorization token (JWT)
 	if jwt_token == "" {
 		c.JSON(http.StatusNotFound, gin.H{"message": "No authorization token provided."})
       	return 
 	}
-
 	
+	// Decode JWT token to username
 	username, err := utils.DecodeJWT(jwt_token)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Unable to decoded authorization token."})
       	return 
 	}
 
+	// Search for User from username
 	var target_user models.User
     database.DB.First(&target_user, "username = ?", strings.ToLower(username))
-
 	if target_user.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Unauthorized."})
       	return 
 	}
 
+	// User successfully found
 	found = true
-	user = UserAuth{
-		Id : target_user.ID,
-		Username:  target_user.Username,
-	}
+	user = target_user
 	return
 
 }
@@ -157,7 +149,7 @@ func GetUser(c *gin.Context) {
 
 	// Success, user found
 	c.JSON(http.StatusAccepted, gin.H{
-		"id": user.Id,
+		"id": user.ID,
 		"username": user.Username,
 	})
 }
