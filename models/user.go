@@ -1,9 +1,15 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
 	gorm.Model
-	Username 	string	`gorm:"unique" json:"username"`
-	Password 	[]byte 	`json:"-"`
+	Username 		string		`gorm:"unique"`
+	Password 		[]byte 	
+	LastPostAt		time.Time 	`gorm:"autoCreateTime"` 
+	LastCommentAt	time.Time 	`gorm:"autoCreateTime"` 
 }
