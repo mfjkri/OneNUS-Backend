@@ -16,6 +16,7 @@ import (
 /*                              Config variables                              */
 /* -------------------------------------------------------------------------- */
 var MAX_TITLE_CHAR = 100
+var MAX_PER_PAGE = float64(50)
 var USER_POST_COOLDOWN = time.Minute * 1
 /* -------------------------------------------------------------------------- */
 
@@ -108,7 +109,7 @@ func CreatePost(c *gin.Context) {
 	}
 
 	// Check that Title and Text does not contain illegal characters
-	if utils.ContainsWhitespaces(json.Title) || !utils.ContainsValidCharactersOnly(json.Text) {
+	if !(utils.ContainsValidCharactersOnly(json.Title) && utils.ContainsValidCharactersOnly(json.Text)) {
 		c.JSON(http.StatusForbidden, gin.H{"message": "Title or Body contains illegal characters."})
 		return 
 	}
@@ -178,7 +179,7 @@ func GetPosts(c *gin.Context) {
     }
 
 	// Limit PerPage to 10
-	perPage := int64(math.Min(10, float64(json.PerPage)))
+	perPage := int64(math.Min(MAX_PER_PAGE, float64(json.PerPage)))
 	offsetPostCount := int64(json.PageNumber - 1) * perPage
 
 	// Filter database by FilterTag (if any)
