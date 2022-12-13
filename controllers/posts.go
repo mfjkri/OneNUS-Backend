@@ -41,8 +41,9 @@ type PostResponse struct {
 	Tag				string		`json:"tag" binding:"required"`
 	Text			string		`json:"text" binding:"required"`
 	Author			string		`json:"author" binding:"required"`
-	RepliesCount	uint		`json:"repliesCount" binding:"required"`
-	UpdatedAt		int64		`json:"updatedAt" binding:"required"` 
+	CommentsCount	uint		`json:"commentsCount" binding:"required"`
+	CommentedAt		int64		`json:"commentedAt" binding:"required"` 
+	StarsCount		uint		`json:"starsCount" binding:"required"`
 }
 
 // Convert a Post Model into a JSON format
@@ -53,8 +54,8 @@ func CreatePostResponse(post *models.Post) PostResponse {
 		Tag: post.Tag,
 		Text: post.Text,
 		Author: post.Author,
-		RepliesCount: post.RepliesCount,
-		UpdatedAt: post.UpdatedAt.Unix(),
+		CommentsCount: post.CommentsCount,
+		CommentedAt: post.CommentedAt.Unix(),
 	}
 }
 
@@ -122,13 +123,16 @@ func CreatePost(c *gin.Context) {
 	}
 
 	// Try to create new Post
-	initialRepliesCount := uint(0) 
+	initialCommentsCount := uint(0) 
+	initialStarsCount := uint(0) 
 	post := models.Post{
 		Title: utils.TrimString(json.Title, MAX_TITLE_CHAR),
 		Tag: json.Tag,
 		Text: json.Text,
 		Author: user.Username,
-		RepliesCount: initialRepliesCount,
+		CommentsCount: initialCommentsCount,
+		CommentedAt: time.Unix(0, 0),
+		StarsCount: initialStarsCount,
 	}
 	new_entry := database.DB.Create(&post)
 
@@ -152,9 +156,9 @@ func CreatePost(c *gin.Context) {
 /*                        GetPosts | route: /posts/get                        */
 /* -------------------------------------------------------------------------- */
 const (
-	ByRecent 	= "updated_at DESC, id DESC"
+	ByRecent 	= "commented_at DESC, id DESC"
 	ByNew 		= "created_at  DESC, id DESC"
-	ByHot 		= "replies_count DESC, updated_at DESC"
+	ByHot 		= "comments_count DESC, commented_at DESC"
 )
 
 type GetPostsRequest struct {

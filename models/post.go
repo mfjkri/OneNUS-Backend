@@ -1,6 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Post struct {
 	gorm.Model
@@ -8,5 +12,7 @@ type Post struct {
 	Tag				string	
 	Text 			string
 	Author 			string
-	RepliesCount	uint
+	CommentsCount	uint
+	CommentedAt		time.Time
+	StarsCount		uint
 }
