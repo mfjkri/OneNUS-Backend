@@ -70,6 +70,12 @@ func RegisterUser(c *gin.Context) {
       return
     }
 
+	// Check that Username and Password does not contain illegal characters
+	if utils.ContainsWhitespaces(json.Password) || !utils.ContainsLettersOnly(json.Username) {
+		c.JSON(http.StatusForbidden, gin.H{"message": "Username or password contains illegal characters."})
+		return 
+	}
+
 	// Hash password
 	hash, err := bcrypt.GenerateFromPassword([]byte(json.Password), 10)
 	if err != nil {
