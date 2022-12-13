@@ -3,10 +3,12 @@ package controllers
 import (
 	"math"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/One-NUS-Backend/database"
 	"github.com/mfjkri/One-NUS-Backend/models"
+	"github.com/mfjkri/One-NUS-Backend/utils"
 )
 
 
@@ -43,6 +45,13 @@ func CreatePost(c *gin.Context) {
       return
     }
 
+	// Prevent frequent CreatePosts by User
+	timeNow, canCreatePost := utils.CheckTimeIsAfter(user.LastPostAt, 1 * time.Minute)
+	if canCreatePost == false {
+		c.JSON(http.StatusForbidden, gin.H{"message": "Creating posts too frequently. Please try again later."})
+      	return
+	}
+
 	// Check that the Tag provided is valid
 	validTag := verifyTag(json.Tag)
 	if validTag == false {
@@ -68,6 +77,11 @@ func CreatePost(c *gin.Context) {
 	}
 
 	// Successfully created a new Post
+
+	// Update LastPostAt for User
+	user.LastPostAt = timeNow
+	database.DB.Save(&user)
+
 	c.JSON(http.StatusAccepted, gin.H{
 		"id": user.ID,
 		"username": user.Username,
