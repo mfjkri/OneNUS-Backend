@@ -13,6 +13,13 @@ import (
 )
 
 /* -------------------------------------------------------------------------- */
+/*                              Config variables                              */
+/* -------------------------------------------------------------------------- */
+var MAX_TITLE_CHAR = 100
+var USER_POST_COOLDOWN = time.Minute * 1
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
 /*                              Helper functions                              */
 /* -------------------------------------------------------------------------- */
 var ValidTags = [4]string{"general", "cs", "life", "misc"}
@@ -94,10 +101,16 @@ func CreatePost(c *gin.Context) {
     }
 
 	// Prevent frequent CreatePosts by User
-	timeNow, canCreatePost := utils.CheckTimeIsAfter(user.LastPostAt, 1 * time.Minute)
+	timeNow, canCreatePost := utils.CheckTimeIsAfter(user.LastPostAt, USER_POST_COOLDOWN)
 	if canCreatePost == false {
 		c.JSON(http.StatusForbidden, gin.H{"message": "Creating posts too frequently. Please try again later."})
       	return
+	}
+
+	// Check that Title and Text does not contain illegal characters
+	if utils.ContainsWhitespaces(json.Title) || !utils.ContainsValidCharactersOnly(json.Text) {
+		c.JSON(http.StatusForbidden, gin.H{"message": "Title or Body contains illegal characters."})
+		return 
 	}
 
 	// Check that the Tag provided is valid
@@ -110,7 +123,7 @@ func CreatePost(c *gin.Context) {
 	// Try to create new Post
 	initialRepliesCount := uint(0) 
 	post := models.Post{
-		Title: json.Title,
+		Title: utils.TrimString(json.Title, MAX_TITLE_CHAR),
 		Tag: json.Tag,
 		Text: json.Text,
 		Author: user.Username,
@@ -259,7 +272,7 @@ func UpdatePostText(c *gin.Context) {
     }
 
 	// Prevent frequent UpdatePostText by User
-	timeNow, canCreatePost := utils.CheckTimeIsAfter(user.LastPostAt, 1 * time.Minute)
+	timeNow, canCreatePost := utils.CheckTimeIsAfter(user.LastPostAt, USER_POST_COOLDOWN)
 	if canCreatePost == false {
 		c.JSON(http.StatusForbidden, gin.H{"message": "Updating posts too frequently. Please try again later."})
       	return

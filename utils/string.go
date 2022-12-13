@@ -25,3 +25,15 @@ func ContainsLettersOnly(s string) bool {
 	}
 	return true
 }
+
+func ContainsValidCharactersOnly(s string) bool {
+	return regexp.MustCompile(`^[A-Za-z0-9!@\#$%^&*()\-_=+\\[\]:;'"? ]+$`).MatchString(s)
+}
+
+func TrimString(s string, maxLen int) string {
+	if len(s) >= maxLen {
+		return s[:maxLen]
+	}
+	
+	return s
+}
