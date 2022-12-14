@@ -172,3 +172,23 @@ func GetUser(c *gin.Context) {
 	})
 }
 /* -------------------------------------------------------------------------- */
+
+
+/* -------------------------------------------------------------------------- */
+/*                      DeleteUser | route : /auth/delete                     */
+/* -------------------------------------------------------------------------- */
+func DeleteUser(c *gin.Context) {
+	// Check that RequestUser is authenticated
+	user, found := VerifyAuth(c)
+	if found == false {
+		return
+	}
+
+	database.DB.Delete(&user)
+
+	// Success, user deleted
+	c.JSON(http.StatusAccepted, gin.H{
+		"username": user.Username,
+	})
+}
+/* -------------------------------------------------------------------------- */

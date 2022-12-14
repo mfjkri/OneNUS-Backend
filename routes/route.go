@@ -10,6 +10,7 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("auth/register", controllers.RegisterUser)
 	r.POST("auth/login", controllers.LoginUser)
 	r.GET("auth/me", controllers.GetUser)
+	// r.POST("auth/delete", controllers.DeleteUser)
 
 	// posts.go
 	r.POST("posts/create", controllers.CreatePost)
