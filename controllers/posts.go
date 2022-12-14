@@ -130,6 +130,7 @@ func CreatePost(c *gin.Context) {
 		Tag: json.Tag,
 		Text: json.Text,
 		Author: user.Username,
+		User: user,
 		CommentsCount: initialCommentsCount,
 		CommentedAt: time.Unix(0, 0),
 		StarsCount: initialStarsCount,

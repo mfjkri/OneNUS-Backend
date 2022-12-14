@@ -2,12 +2,11 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model
+	BaseModel
+	
 	Username 		string		`gorm:"unique"`
 	Password 		[]byte 	
 	LastPostAt		time.Time 	`gorm:"autoCreateTime"` 
