@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -32,10 +35,22 @@ func CORSConfig() cors.Config {
     return corsConfig
 }
 
+func SimulateLatency() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		time.Sleep(time.Second * time.Duration(rand.Float64() * 4))
+	}
+}
+
 func main() {
 	router := gin.Default()
-	// router.Use(cors.Default())
+
+	// Middleware functions
 	router.Use(cors.New(CORSConfig()))
+	if os.Getenv("SIMULATE_LATENCY") == "true" {
+		fmt.Println("Simulating latency for this server instance...")
+		router.Use(SimulateLatency())
+	}
+
 	routes.SetupRoutes(router)
 	router.Run()
 }
