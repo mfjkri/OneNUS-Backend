@@ -37,7 +37,8 @@ func CORSConfig() cors.Config {
 
 func SimulateLatency() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		time.Sleep(time.Second * time.Duration(rand.Float64() * 4))
+		time.Sleep(time.Second * time.Duration(rand.Float64() * 2))
+		return 
 	}
 }
 
