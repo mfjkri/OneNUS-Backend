@@ -17,7 +17,7 @@ import (
 /* -------------------------------------------------------------------------- */
 var MAX_TITLE_CHAR = 100
 var MAX_PER_PAGE = float64(50)
-var USER_POST_COOLDOWN = time.Minute * 1
+var USER_POST_COOLDOWN = -time.Minute * 1
 /* -------------------------------------------------------------------------- */
 
 
@@ -44,6 +44,8 @@ type PostResponse struct {
 	CommentsCount	uint		`json:"commentsCount" binding:"required"`
 	CommentedAt		int64		`json:"commentedAt" binding:"required"` 
 	StarsCount		uint		`json:"starsCount" binding:"required"`
+	CreatedAt 		int64		`json:"createdAt" binding:"required"`
+	UpdatedAt 		int64		`json:"updatedAt" binding:"required"`
 }
 
 // Convert a Post Model into a JSON format
@@ -56,6 +58,8 @@ func CreatePostResponse(post *models.Post) PostResponse {
 		Author: post.Author,
 		CommentsCount: post.CommentsCount,
 		CommentedAt: post.CommentedAt.Unix(),
+		CreatedAt: post.CreatedAt.Unix(),
+		UpdatedAt: post.UpdatedAt.Unix(),
 	}
 }
 
@@ -82,7 +86,7 @@ func CreatePostsResponse(posts *[]models.Post, totalPostsCount int64) GetPostsRe
 
 
 /* -------------------------------------------------------------------------- */
-/*                        GetPosts | route: /posts/get                        */
+/*    GetPosts | route: /posts/get/:perPage/:pageNumber/:sortBy/:filterTag    */
 /* -------------------------------------------------------------------------- */
 const (
 	ByRecent 	= "commented_at DESC, id DESC"
@@ -91,10 +95,10 @@ const (
 )
 
 type GetPostsRequest struct {
-	PerPage		uint 	`uri:"perPage" form:"perPage" json:"perPage" binding:"required"`
-	PageNumber 	uint 	`uri:"pageNumber" form:"pageNumber" json:"pageNumber" binding:"required"`
-	SortBy 		string 	`uri:"sortBy" form:"sortBy" json:"sortBy"`
-	FilterTag 	string 	`uri:"filterTag" form:"filterTag" json:"filterTag"`
+	PerPage		uint 	`uri:"perPage" binding:"required"`
+	PageNumber 	uint 	`uri:"pageNumber" binding:"required"`
+	SortBy 		string 	`uri:"sortBy"`
+	FilterTag 	string 	`uri:"filterTag"`
 }
 
 func GetPosts(c *gin.Context) {
@@ -151,10 +155,10 @@ func GetPosts(c *gin.Context) {
 
 
 /* -------------------------------------------------------------------------- */
-/*                    GetPostByID | route : /posts/getbyid                    */
+/*                GetPostByID | route : /posts/getbyid/:postId                */
 /* -------------------------------------------------------------------------- */
 type GetPostsByIDRequest struct {
-	PostId uint `form:"postId" json:"postId" binding:"required"`
+	PostId uint `uri:"postId" binding:"required"`
 }
 
 func GetPostsByID(c *gin.Context) {
@@ -166,7 +170,7 @@ func GetPostsByID(c *gin.Context) {
 
 	// Parse RequestBody 
 	var json GetPostsByIDRequest
-    if err := c.ShouldBindJSON(&json); err != nil {
+    if err := c.ShouldBindUri(&json); err != nil {
       c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
       return
     }
@@ -310,6 +314,49 @@ func UpdatePostText(c *gin.Context) {
 	user.LastPostAt = timeNow
 	database.DB.Save(&post)
 	database.DB.Save(&user)
+
+	// Return new Post data
+	c.JSON(http.StatusAccepted, CreatePostResponse(&post))
+}
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+/*                     DeletePost | route: /delete/:postId                    */
+/* -------------------------------------------------------------------------- */
+type DeletePostRequest struct {
+	PostId uint `uri:"postId" binding:"required"`
+}
+
+func DeletePostText(c *gin.Context) {
+	// Check that RequestUser is authenticated
+	user, found := VerifyAuth(c)
+	if found == false {
+		return
+	}
+
+	// Parse RequestBody 
+	var json DeletePostRequest
+    if err := c.ShouldBindUri(&json); err != nil {
+      c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+      return
+    }
+
+	// Find Post from PostId
+	var post models.Post
+    database.DB.First(&post, json.PostId)
+	if post.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Post not found."})
+      	return
+	}
+
+	
+	// Check User is the author
+	if (strings.ToLower(post.Author) != user.Username) {
+		c.JSON(http.StatusForbidden, gin.H{"message": "You do not have valid permissions."})
+      return
+	}
+
+	database.DB.Delete(&post)
 
 	// Return new Post data
 	c.JSON(http.StatusAccepted, CreatePostResponse(&post))
