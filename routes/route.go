@@ -13,9 +13,9 @@ func SetupRoutes(r *gin.Engine) {
 	// r.POST("auth/delete", controllers.DeleteUser)
 
 	// posts.go
-	r.POST("posts/create", controllers.CreatePost)
 	r.GET("posts/get/:perPage/:pageNumber/:sortBy/:filterTag", controllers.GetPosts)
 	r.GET("posts/getbyid", controllers.GetPostsByID)
+	r.POST("posts/create", controllers.CreatePost)
 	r.POST("/posts/updatetext", controllers.UpdatePostText)
 	
 	// misc

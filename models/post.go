@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+var ValidTags = [4]string{"general", "cs", "life", "misc"}
+
 type Post struct {
 	BaseModel
 	

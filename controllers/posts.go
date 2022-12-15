@@ -20,14 +20,14 @@ var MAX_PER_PAGE = float64(50)
 var USER_POST_COOLDOWN = time.Minute * 1
 /* -------------------------------------------------------------------------- */
 
+
+
 /* -------------------------------------------------------------------------- */
 /*                              Helper functions                              */
 /* -------------------------------------------------------------------------- */
-var ValidTags = [4]string{"general", "cs", "life", "misc"}
-
 func verifyTag(tag string) (valid bool) {
 	valid = false
-	for _, x := range ValidTags {
+	for _, x := range models.ValidTags {
 		if x == tag {
 			valid = true
 		}
@@ -78,6 +78,113 @@ func CreatePostsResponse(posts *[]models.Post, totalPostsCount int64) GetPostsRe
 	}
 }
 /* -------------------------------------------------------------------------- */
+
+
+
+/* -------------------------------------------------------------------------- */
+/*                        GetPosts | route: /posts/get                        */
+/* -------------------------------------------------------------------------- */
+const (
+	ByRecent 	= "commented_at DESC, id DESC"
+	ByNew 		= "created_at  DESC, id DESC"
+	ByHot 		= "comments_count DESC, commented_at DESC"
+)
+
+type GetPostsRequest struct {
+	PerPage		uint 	`uri:"perPage" form:"perPage" json:"perPage" binding:"required"`
+	PageNumber 	uint 	`uri:"pageNumber" form:"pageNumber" json:"pageNumber" binding:"required"`
+	SortBy 		string 	`uri:"sortBy" form:"sortBy" json:"sortBy"`
+	FilterTag 	string 	`uri:"filterTag" form:"filterTag" json:"filterTag"`
+}
+
+func GetPosts(c *gin.Context) {
+	// Check that RequestUser is authenticated
+	_, found := VerifyAuth(c)
+	if found == false {
+		return
+	}
+
+	// Parse RequestBody 
+	var json GetPostsRequest
+    if err := c.ShouldBindUri(&json); err != nil {
+      c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+      return
+    }
+
+	// Limit PerPage to 10
+	perPage := int64(math.Min(MAX_PER_PAGE, float64(json.PerPage)))
+	offsetPostCount := int64(json.PageNumber - 1) * perPage
+
+	// Filter database by FilterTag (if any)
+	dbContext := database.DB
+	if verifyTag(json.FilterTag) {
+		dbContext = dbContext.Where("tag = ?", json.FilterTag)
+	}
+	
+	// Get total count for Posts
+	var totalPostsCount int64
+	dbContext.Model(&models.Post{}).Count(&totalPostsCount)
+
+	// If we are request beyond the bounds of total count, error
+	if (offsetPostCount < 0) || (offsetPostCount > totalPostsCount) {
+		c.JSON(http.StatusForbidden, gin.H{"message": "No more posts found."})
+		return
+	}
+	
+	// Sort Posts by sort option provided (defaults to byNew)
+	defaultSortOption := ByNew
+	if json.SortBy == "byRecent" {
+		defaultSortOption = ByRecent
+	} else if json.SortBy == "byHot" {
+		defaultSortOption = ByHot
+	}
+
+	// Fetch Posts from [offsetCount, offsetCount + perPage]
+	var posts []models.Post
+	dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetPostCount)).Find(&posts)
+
+	// Return fetched posts
+	c.JSON(http.StatusAccepted, CreatePostsResponse(&posts, totalPostsCount))
+}
+/* -------------------------------------------------------------------------- */
+
+
+
+/* -------------------------------------------------------------------------- */
+/*                    GetPostByID | route : /posts/getbyid                    */
+/* -------------------------------------------------------------------------- */
+type GetPostsByIDRequest struct {
+	PostId uint `form:"postId" json:"postId" binding:"required"`
+}
+
+func GetPostsByID(c *gin.Context) {
+	// Check that RequestUser is authenticated
+	_, found := VerifyAuth(c)
+	if found == false {
+		return
+	}
+
+	// Parse RequestBody 
+	var json GetPostsByIDRequest
+    if err := c.ShouldBindJSON(&json); err != nil {
+      c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+      return
+    }
+
+	// Find Post from PostId
+	var post models.Post
+    database.DB.First(&post, json.PostId)
+	if post.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Post not found."})
+      	return
+	}
+
+	// Return fetched Post
+	c.JSON(http.StatusAccepted, CreatePostResponse(&post))
+}
+/* -------------------------------------------------------------------------- */
+
+
 
 /* -------------------------------------------------------------------------- */
 /*                        CreatePost | route: /post/get                       */
@@ -153,107 +260,7 @@ func CreatePost(c *gin.Context) {
 }
 /* -------------------------------------------------------------------------- */
 
-/* -------------------------------------------------------------------------- */
-/*                        GetPosts | route: /posts/get                        */
-/* -------------------------------------------------------------------------- */
-const (
-	ByRecent 	= "commented_at DESC, id DESC"
-	ByNew 		= "created_at  DESC, id DESC"
-	ByHot 		= "comments_count DESC, commented_at DESC"
-)
 
-type GetPostsRequest struct {
-	PerPage		uint 	`uri:"perPage" form:"perPage" json:"perPage" binding:"required"`
-	PageNumber 	uint 	`uri:"pageNumber" form:"pageNumber" json:"pageNumber" binding:"required"`
-	SortBy 		string 	`uri:"sortBy" form:"sortBy" json:"sortBy"`
-	FilterTag 	string 	`uri:"filterTag" form:"filterTag" json:"filterTag"`
-}
-
-func GetPosts(c *gin.Context) {
-	// Check that RequestUser is authenticated
-	_, found := VerifyAuth(c)
-	if found == false {
-		return
-	}
-
-	// Parse RequestBody 
-	var json GetPostsRequest
-    if err := c.ShouldBindUri(&json); err != nil {
-      c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-      return
-    }
-
-	// Limit PerPage to 10
-	perPage := int64(math.Min(MAX_PER_PAGE, float64(json.PerPage)))
-	offsetPostCount := int64(json.PageNumber - 1) * perPage
-
-	// Filter database by FilterTag (if any)
-	dbContext := database.DB
-	if verifyTag(json.FilterTag) {
-		dbContext = dbContext.Where("tag = ?", json.FilterTag)
-	}
-	
-	// Get total count for Posts
-	var totalPostsCount int64
-	dbContext.Model(&models.Post{}).Count(&totalPostsCount)
-
-	// If we are request beyond the bounds of total count, error
-	if (offsetPostCount < 0) || (offsetPostCount > totalPostsCount) {
-		c.JSON(http.StatusForbidden, gin.H{"message": "No more posts found."})
-		return
-	}
-	
-	// Sort Posts by sort option provided (defaults to byNew)
-	defaultSortOption := ByNew
-	if json.SortBy == "byRecent" {
-		defaultSortOption = ByRecent
-	} else if json.SortBy == "byHot" {
-		defaultSortOption = ByHot
-	}
-
-	// Fetch Posts from [offsetCount, offsetCount + perPage]
-	var posts []models.Post
-	dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetPostCount)).Find(&posts)
-
-	// Return fetched posts
-	c.JSON(http.StatusAccepted, CreatePostsResponse(&posts, totalPostsCount))
-}
-/* -------------------------------------------------------------------------- */
-
-
-/* -------------------------------------------------------------------------- */
-/*                    GetPostByID | route : /posts/getbyid                    */
-/* -------------------------------------------------------------------------- */
-type GetPostsByIDRequest struct {
-	PostId uint `form:"postId" json:"postId" binding:"required"`
-}
-
-func GetPostsByID(c *gin.Context) {
-	// Check that RequestUser is authenticated
-	_, found := VerifyAuth(c)
-	if found == false {
-		return
-	}
-
-	// Parse RequestBody 
-	var json GetPostsByIDRequest
-    if err := c.ShouldBindJSON(&json); err != nil {
-      c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-      return
-    }
-
-	// Find Post from PostId
-	var post models.Post
-    database.DB.First(&post, json.PostId)
-	if post.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Post not found."})
-      	return
-	}
-
-	// Return fetched Post
-	c.JSON(http.StatusAccepted, CreatePostResponse(&post))
-}
-/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /*                  UpdatePostText | route: /posts/updatetext                 */
