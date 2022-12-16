@@ -13,16 +13,6 @@ import (
 )
 
 /* -------------------------------------------------------------------------- */
-/*                              Config variables                              */
-/* -------------------------------------------------------------------------- */
-var MAX_TITLE_CHAR = 100
-var MAX_PER_PAGE = float64(50)
-var USER_POST_COOLDOWN = -time.Minute * 1
-/* -------------------------------------------------------------------------- */
-
-
-
-/* -------------------------------------------------------------------------- */
 /*                              Helper functions                              */
 /* -------------------------------------------------------------------------- */
 func verifyTag(tag string) (valid bool) {
@@ -90,12 +80,6 @@ func CreatePostsResponse(posts *[]models.Post, totalPostsCount int64) GetPostsRe
 /* -------------------------------------------------------------------------- */
 /*    GetPosts | route: /posts/get/:perPage/:pageNumber/:sortBy/:filterTag    */
 /* -------------------------------------------------------------------------- */
-const (
-	ByRecent 	= "commented_at DESC, id DESC"
-	ByNew 		= "created_at  DESC, id DESC"
-	ByHot 		= "comments_count DESC, commented_at DESC"
-)
-
 type GetPostsRequest struct {
 	PerPage		uint 	`uri:"perPage" binding:"required"`
 	PageNumber 	uint 	`uri:"pageNumber" binding:"required"`
@@ -121,15 +105,16 @@ func GetPosts(c *gin.Context) {
 	perPage := int64(math.Min(MAX_PER_PAGE, float64(json.PerPage)))
 	offsetPostCount := int64(json.PageNumber - 1) * perPage
 
+	var allPosts []models.Post
+	dbContext := database.DB.Find(&allPosts)
+
 	// Filter database by FilterTag (if any)
-	dbContext := database.DB
 	if verifyTag(json.FilterTag) {
 		dbContext = dbContext.Where("tag = ?", json.FilterTag)
 	}
 	
 	// Get total count for Posts
-	var totalPostsCount int64
-	dbContext.Model(&models.Post{}).Count(&totalPostsCount)
+	var totalPostsCount = dbContext.RowsAffected 
 
 	// If we are request beyond the bounds of total count, error
 	if (offsetPostCount < 0) || (offsetPostCount > totalPostsCount) {
@@ -159,11 +144,11 @@ func GetPosts(c *gin.Context) {
 /* -------------------------------------------------------------------------- */
 /*                GetPostByID | route : /posts/getbyid/:postId                */
 /* -------------------------------------------------------------------------- */
-type GetPostsByIDRequest struct {
+type GetPostByIDRequest struct {
 	PostId uint `uri:"postId" binding:"required"`
 }
 
-func GetPostsByID(c *gin.Context) {
+func GetPostByID(c *gin.Context) {
 	// Check that RequestUser is authenticated
 	_, found := VerifyAuth(c)
 	if found == false {
@@ -171,7 +156,7 @@ func GetPostsByID(c *gin.Context) {
 	}
 
 	// Parse RequestBody 
-	var json GetPostsByIDRequest
+	var json GetPostByIDRequest
     if err := c.ShouldBindUri(&json); err != nil {
       c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
       return
@@ -272,7 +257,7 @@ func CreatePost(c *gin.Context) {
 /*                  UpdatePostText | route: /posts/updatetext                 */
 /* -------------------------------------------------------------------------- */
 type UpdatePostTextRequest struct {
-	GetPostsByIDRequest
+	GetPostByIDRequest
 	Text	string	`json:"text" binding:"required"` 
 }
 
@@ -329,7 +314,7 @@ type DeletePostRequest struct {
 	PostId uint `uri:"postId" binding:"required"`
 }
 
-func DeletePostText(c *gin.Context) {
+func DeletePost(c *gin.Context) {
 	// Check that RequestUser is authenticated
 	user, found := VerifyAuth(c)
 	if found == false {
