@@ -41,6 +41,7 @@ type PostResponse struct {
 	Tag				string		`json:"tag" binding:"required"`
 	Text			string		`json:"text" binding:"required"`
 	Author			string		`json:"author" binding:"required"`
+	UserID 			uint 		`json:"userId" binding:"required"`
 	CommentsCount	uint		`json:"commentsCount" binding:"required"`
 	CommentedAt		int64		`json:"commentedAt" binding:"required"` 
 	StarsCount		uint		`json:"starsCount" binding:"required"`
@@ -56,6 +57,7 @@ func CreatePostResponse(post *models.Post) PostResponse {
 		Tag: post.Tag,
 		Text: post.Text,
 		Author: post.Author,
+		UserID: post.UserID,
 		CommentsCount: post.CommentsCount,
 		CommentedAt: post.CommentedAt.Unix(),
 		CreatedAt: post.CreatedAt.Unix(),
