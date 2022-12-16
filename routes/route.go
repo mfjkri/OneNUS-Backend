@@ -14,10 +14,16 @@ func SetupRoutes(r *gin.Engine) {
 
 	// posts.go
 	r.GET("posts/get/:perPage/:pageNumber/:sortBy/:filterTag", controllers.GetPosts)
-	r.GET("posts/getbyid/:postId", controllers.GetPostsByID)
+	r.GET("posts/getbyid/:postId", controllers.GetPostByID)
 	r.POST("posts/create", controllers.CreatePost)
-	r.POST("/posts/updatetext", controllers.UpdatePostText)
-	r.DELETE("/posts/delete/:postId", controllers.DeletePostText)
+	r.POST("posts/updatetext", controllers.UpdatePostText)
+	r.DELETE("posts/delete/:postId", controllers.DeletePost)
+
+	// comments.go
+	r.GET("comments/get/:postId/:perPage/:pageNumber/:sortBy", controllers.GetComments)
+	r.POST("comments/create", controllers.CreateComment)
+	r.POST("comments/updatetext", controllers.UpdateCommentText)
+	r.DELETE("comments/delete/:commentId", controllers.DeleteComment)
 	
 	// misc
 	r.GET("ping", func(c *gin.Context) {

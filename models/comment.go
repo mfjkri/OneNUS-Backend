@@ -1,8 +1,14 @@
 package models
 
-import "gorm.io/gorm"
-
 type Comment struct {
-	gorm.Model
+	BaseModel
+	
 	Text 	string	`json:"text"`
+
+	Author 			string
+	User			User 	`gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	UserID 			uint
+
+	Post			Post	`gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	PostId			uint
 }
