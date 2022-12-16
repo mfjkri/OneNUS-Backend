@@ -181,7 +181,7 @@ func GetPostsByID(c *gin.Context) {
 	var post models.Post
     database.DB.First(&post, json.PostId)
 	if post.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Post not found."})
+		c.JSON(http.StatusNoContent, gin.H{"message": "Post not found."})
       	return
 	}
 
