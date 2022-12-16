@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"os"
 	"time"
@@ -47,10 +46,10 @@ func main() {
 
 	// Middleware functions
 	router.Use(cors.New(CORSConfig()))
-	if os.Getenv("SIMULATE_LATENCY") == "true" {
-		fmt.Println("Simulating latency for this server instance...")
-		router.Use(SimulateLatency())
-	}
+	// if os.Getenv("SIMULATE_LATENCY") == "true" {
+	// 	fmt.Println("Simulating latency for this server instance...")
+	// 	router.Use(SimulateLatency())
+	// }
 
 	routes.SetupRoutes(router)
 	router.Run()
