@@ -27,7 +27,7 @@ func ContainsLettersOnly(s string) bool {
 }
 
 func ContainsValidCharactersOnly(s string) bool {
-	return regexp.MustCompile(`^[A-Za-z0-9!@\#$%^&*()\-_=+\\[\]:;'’"? \n.,/]+$`).MatchString(s)
+	return regexp.MustCompile(`^[A-Za-z0-9!@\#$%^&*()\-_=+\\[\]:;'’"? \n.,/“”]+$`).MatchString(s)
 }
 
 func TrimString(s string, maxLen int) string {
