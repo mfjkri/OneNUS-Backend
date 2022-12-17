@@ -224,9 +224,9 @@ func CreatePost(c *gin.Context) {
 	initialCommentsCount := uint(0) 
 	initialStarsCount := uint(0) 
 	post := models.Post{
-		Title: utils.TrimString(json.Title, MAX_TITLE_CHAR),
+		Title: utils.TrimString(json.Title, MAX_POST_TITLE_CHAR),
 		Tag: json.Tag,
-		Text: json.Text,
+		Text: utils.TrimString(json.Text, MAX_POST_TEXT_CHAR),
 		Author: user.Username,
 		User: user,
 		CommentsCount: initialCommentsCount,
@@ -297,7 +297,7 @@ func UpdatePostText(c *gin.Context) {
 	}
 
 	// Replace Post text and update User LastPostAt
-	post.Text = json.Text
+	post.Text = utils.TrimString(json.Text, MAX_POST_TEXT_CHAR)
 	user.LastPostAt = timeNow
 	database.DB.Save(&post)
 	database.DB.Save(&user)

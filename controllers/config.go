@@ -5,10 +5,15 @@ import "time"
 /* -------------------------------------------------------------------------- */
 /*                              Config variables                              */
 /* -------------------------------------------------------------------------- */
-var MAX_TITLE_CHAR = 100
 var MAX_PER_PAGE = float64(50)
+
+var MAX_POST_TITLE_CHAR = 100
+var MAX_POST_TEXT_CHAR = 5000
 var USER_POST_COOLDOWN = -time.Minute * 1
+
+var MAX_COMMENT_TEXT_CHAR = 1000
 var USER_COMMENT_COOLDOWN = -time.Minute * 1
+
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
