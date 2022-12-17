@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"math"
 	"net/http"
 	"strings"
@@ -117,8 +116,6 @@ func GetComments(c *gin.Context) {
 	// Fetch Posts from [offsetCount, offsetCount + perPage]
 	var comments []models.Comment
 	dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetCommentCount)).Find(&comments)
-
-	fmt.Println("comments", perPage, json.PageNumber, comments, totalCommentsCount);
 
 	// Return fetched posts
 	c.JSON(http.StatusAccepted, CreateCommentsResponse(&comments, totalCommentsCount))
