@@ -96,7 +96,7 @@ func GetComments(c *gin.Context) {
 	offsetCommentCount := int64(json.PageNumber - 1) * perPage
 
 	// Get all comments from Post
-	dbContext := database.DB.Where("post_id = ?", json.PostId)
+	dbContext := database.DB.Table("comments").Where("post_id = ?", json.PostId)
 	
 	// Get total count for Comments
 	totalCommentsCount := int64(post.CommentsCount)

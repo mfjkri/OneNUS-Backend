@@ -35,7 +35,7 @@ func VerifyAuth(c *gin.Context) (user models.User, found bool) {
 
 	// Search for User from username
 	var target_user models.User
-    database.DB.First(&target_user, "username = ?", strings.ToLower(username))
+    database.DB.Table("users").Where("username = ?", strings.ToLower(username)).First(&target_user)
 	if target_user.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Unauthorized."})
       	return 
@@ -132,7 +132,7 @@ func LoginUser(c *gin.Context) {
 
 	// Find User based on request.username
 	var user models.User
-    database.DB.First(&user, "username = ?", username_lowered)
+	database.DB.Table("users").Where("username = ?", username_lowered).First(&user)
 	if user.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Username not found."})
       	return

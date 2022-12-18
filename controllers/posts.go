@@ -105,8 +105,7 @@ func GetPosts(c *gin.Context) {
 	perPage := int64(math.Min(MAX_PER_PAGE, float64(json.PerPage)))
 	offsetPostCount := int64(json.PageNumber - 1) * perPage
 
-	var allPosts []models.Post
-	dbContext := database.DB.Find(&allPosts)
+	dbContext := database.DB.Table("posts")
 
 	// Filter database by FilterTag (if any)
 	if verifyTag(json.FilterTag) {
