@@ -26,7 +26,7 @@ func CORSConfig() cors.Config {
     corsConfig.AllowOrigins = []string{
 		"http://localhost:3000",
 		"http://192.168.0.100:3000",
-		"http://onenus.s3-website-ap-southeast-1.amazonaws.com",
+		"https://www.onenus.link",
 	}
     corsConfig.AllowCredentials = true
     corsConfig.AddAllowHeaders("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers", "Content-Type", "X-XSRF-TOKEN", "Accept", "Origin", "X-Requested-With", "Authorization")
