@@ -50,6 +50,7 @@ func CreatePostResponse(post *models.Post) PostResponse {
 		UserID: post.UserID,
 		CommentsCount: post.CommentsCount,
 		CommentedAt: post.CommentedAt.Unix(),
+		StarsCount: post.StarsCount,
 		CreatedAt: post.CreatedAt.Unix(),
 		UpdatedAt: post.UpdatedAt.Unix(),
 	}
