@@ -16,8 +16,8 @@ import (
 
 
 func GenerateUser() models.User {
-	password, _ :=bcrypt.GenerateFromPassword([]byte("password"), 10)
-	return models.User{Username: strings.ToLower(faker.LastName(options.WithRandomStringLength(10))), Password: password}
+	password, _ := bcrypt.GenerateFromPassword([]byte("password"), 10)
+	return models.User{Username: strings.ToLower(faker.LastName(options.WithRandomStringLength(10), options.WithGenerateUniqueValues(true))), Password: password}
 }
 
 func GenerateUsers(number int) []models.User {
