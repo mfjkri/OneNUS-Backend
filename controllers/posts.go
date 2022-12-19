@@ -113,7 +113,8 @@ func GetPosts(c *gin.Context) {
 	}
 	
 	// Get total count for Posts
-	var totalPostsCount = dbContext.RowsAffected 
+	var totalPostsCount int64
+	dbContext.Count(&totalPostsCount) 
 
 	// If we are request beyond the bounds of total count, error
 	if (offsetPostCount < 0) || (offsetPostCount > totalPostsCount) {
