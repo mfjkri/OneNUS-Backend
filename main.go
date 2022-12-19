@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"math/rand"
 	"os"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/One-NUS-Backend/database"
 	"github.com/mfjkri/One-NUS-Backend/routes"
+	"github.com/mfjkri/One-NUS-Backend/seed"
 	"github.com/mfjkri/One-NUS-Backend/utils"
 )
 
@@ -44,6 +46,10 @@ func SimulateLatency() gin.HandlerFunc {
 func main() {
 	router := gin.Default()
 
+	cmd := flag.String("cmd", "", "")
+	flag.Parse()
+	str_cmd := string(*cmd)
+
 	// Middleware functions
 	router.Use(cors.New(CORSConfig()))
 	// if os.Getenv("SIMULATE_LATENCY") == "true" {
@@ -52,5 +58,15 @@ func main() {
 	// }
 
 	routes.SetupRoutes(router)
+
+	if str_cmd == "reset" {
+		seed.DeleteAll()
+	} else if str_cmd == "seed" {
+		seed.GenerateData()
+
+	} else if str_cmd == "update" {
+		seed.UpdateData()
+	}
+
 	router.Run()
 }
