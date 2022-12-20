@@ -3,7 +3,6 @@ package controllers
 import (
 	"math"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/One-NUS-Backend/database"
@@ -235,7 +234,7 @@ func UpdateCommentText(c *gin.Context) {
 	}
 
 	// Check User is the author
-	if strings.ToLower(comment.Author) != user.Username {
+	if comment.UserID != user.ID {
 		c.JSON(http.StatusForbidden, gin.H{"message": "You do not have valid permissions."})
 		return
 	}
@@ -290,7 +289,7 @@ func DeleteComment(c *gin.Context) {
 	}
 
 	// Check User is the author
-	if strings.ToLower(comment.Author) != user.Username {
+	if post.UserID != user.ID {
 		c.JSON(http.StatusForbidden, gin.H{"message": "You do not have valid permissions."})
 		return
 	}

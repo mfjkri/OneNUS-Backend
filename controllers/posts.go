@@ -3,7 +3,6 @@ package controllers
 import (
 	"math"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -288,7 +287,7 @@ func UpdatePostText(c *gin.Context) {
 	}
 
 	// Check User is the author
-	if strings.ToLower(post.Author) != user.Username {
+	if post.UserID != user.ID {
 		c.JSON(http.StatusForbidden, gin.H{"message": "You do not have valid permissions."})
 		return
 	}
@@ -335,7 +334,7 @@ func DeletePost(c *gin.Context) {
 	}
 
 	// Check User is the author
-	if strings.ToLower(post.Author) != user.Username {
+	if post.UserID != user.ID {
 		c.JSON(http.StatusForbidden, gin.H{"message": "You do not have valid permissions."})
 		return
 	}
