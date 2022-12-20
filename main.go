@@ -65,7 +65,8 @@ func main() {
 		seed.GenerateData()
 
 	} else if str_cmd == "update" {
-		seed.UpdateData()
+		seed.UpdateUsers()
+		seed.UpdatePosts()
 	}
 
 	router.Run()

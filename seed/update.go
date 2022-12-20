@@ -7,7 +7,24 @@ import (
 	"github.com/mfjkri/One-NUS-Backend/models"
 )
 
-func UpdateData() {
+func UpdateUsers() {
+	fmt.Println("Updating users data...")
+	var users []models.User
+	database.DB.Find(&users)
+
+	for _, user := range users {
+		if user.Username != "admin" {
+			user.Role = "member"
+		} else {
+			user.Role = "admin"
+		}
+
+		database.DB.Save(&user)
+	}
+	fmt.Println("Update complete!")
+}
+
+func UpdatePosts() {
 	fmt.Println("Updating posts data...")
 
 	var posts []models.Post
