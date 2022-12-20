@@ -14,7 +14,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-
 func GenerateUser() models.User {
 	password, _ := bcrypt.GenerateFromPassword([]byte("password"), 10)
 	return models.User{Username: strings.ToLower(faker.LastName(options.WithRandomStringLength(10), options.WithGenerateUniqueValues(true))), Password: password}
@@ -42,15 +41,15 @@ func GeneratePost(user models.User, creationTime time.Time) Post {
 		UpdatedAt: creationTime,
 
 		Title: faker.Sentence(options.WithRandomStringLength(uint(controllers.MAX_POST_TITLE_CHAR))),
-		Tag: ChooseRandomTag(),
-		Text: faker.Paragraph(options.WithRandomStringLength(uint(controllers.MAX_POST_TEXT_CHAR))),
+		Tag:   ChooseRandomTag(),
+		Text:  faker.Paragraph(options.WithRandomStringLength(uint(controllers.MAX_POST_TEXT_CHAR))),
 
 		Author: user.Username,
-		User: user,
+		User:   user,
 
 		CommentsCount: 0,
-		CommentedAt: time.Unix(0, 0),
-		StarsCount: uint(rand.Intn((100))),
+		CommentedAt:   time.Unix(0, 0),
+		StarsCount:    uint(rand.Intn((100))),
 	}
 }
 
@@ -61,9 +60,9 @@ func GeneratePosts(number int, user models.User, startTime time.Time) {
 		post := GeneratePost(user, initialTime)
 		database.DB.Create(&post)
 		initialTime.Add(
-			(time.Millisecond * time.Duration(rand.Intn(100))) + 
-			(time.Second * time.Duration(rand.Intn(60))) + 
-			(time.Minute * time.Duration(rand.Intn(60))))
+			(time.Millisecond * time.Duration(rand.Intn(100))) +
+				(time.Second * time.Duration(rand.Intn(60))) +
+				(time.Minute * time.Duration(rand.Intn(60))))
 	}
 }
 
@@ -72,7 +71,7 @@ func GeneratePostsForEachUser() {
 	database.DB.Find(&users)
 
 	initialTime := time.Now().Add(-time.Hour * 24 * 20)
-	for _, user := range(users) {
+	for _, user := range users {
 		GeneratePosts(
 			rand.Intn(12),
 			user,
@@ -89,7 +88,7 @@ func GenerateComment(user models.User, post models.Post, creationTime time.Time)
 		Text: faker.Paragraph(options.WithRandomStringLength(uint(controllers.MAX_COMMENT_TEXT_CHAR))),
 
 		Author: user.Username,
-		User: user,
+		User:   user,
 
 		Post: post,
 	}
@@ -102,9 +101,9 @@ func GenerateComments(number int, user models.User, post models.Post) {
 		comment := GenerateComment(user, post, initialTime)
 		database.DB.Create(&comment)
 		initialTime = initialTime.Add(
-			(time.Millisecond * time.Duration(rand.Intn(100))) + 
-			(time.Second * time.Duration(rand.Intn(60))) + 
-			(time.Minute * time.Duration(rand.Intn(60))))
+			(time.Millisecond * time.Duration(rand.Intn(100))) +
+				(time.Second * time.Duration(rand.Intn(60))) +
+				(time.Minute * time.Duration(rand.Intn(60))))
 	}
 }
 
@@ -115,11 +114,11 @@ func GenerateCommentsForEachPost() {
 	var posts []models.Post
 	database.DB.Find(&posts)
 
-	for _, user := range(users) {
+	for _, user := range users {
 		shouldComment := rand.Float64() > 0.4
 
 		if shouldComment {
-			for _, post := range(posts) {
+			for _, post := range posts {
 				GenerateComments(
 					rand.Intn(3),
 					user,

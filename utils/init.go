@@ -13,4 +13,3 @@ func LoadEnv() {
 
 	fmt.Println("Successfully import .env variables...")
 }
-

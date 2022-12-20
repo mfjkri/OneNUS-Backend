@@ -6,39 +6,37 @@ import (
 	"github.com/mfjkri/One-NUS-Backend/models"
 )
 
-
 type Post struct {
-	ID        uint `gorm:"primarykey"`
+	ID uint `gorm:"primarykey"`
 
 	CreatedAt time.Time
-    UpdatedAt time.Time
-	
-	Title			string
-	Tag				string	
-	Text 			string
-	
-	Author 			string
-	User			models.User 	`gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	UserID 			uint
+	UpdatedAt time.Time
 
-	CommentsCount	uint
-	CommentedAt		time.Time
-	StarsCount		uint
+	Title string
+	Tag   string
+	Text  string
+
+	Author string
+	User   models.User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	UserID uint
+
+	CommentsCount uint
+	CommentedAt   time.Time
+	StarsCount    uint
 }
 
-
 type Comment struct {
-	ID        uint 					`gorm:"primarykey"`
+	ID uint `gorm:"primarykey"`
 
 	CreatedAt time.Time
-    UpdatedAt time.Time
-	
-	Text 	string					`json:"text"`
+	UpdatedAt time.Time
 
-	Author 			string
-	User			models.User 	`gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	UserID 			uint
+	Text string `json:"text"`
 
-	Post			models.Post			`gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	PostId			uint
+	Author string
+	User   models.User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	UserID uint
+
+	Post   models.Post `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	PostId uint
 }

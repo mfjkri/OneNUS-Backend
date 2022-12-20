@@ -6,9 +6,9 @@ import (
 
 type User struct {
 	BaseModel
-	
-	Username 		string		`gorm:"unique"`
-	Password 		[]byte 	
-	LastPostAt		time.Time 	`gorm:"autoCreateTime"` 
-	LastCommentAt	time.Time 	`gorm:"autoCreateTime"` 
+
+	Username      string `gorm:"unique"`
+	Password      []byte
+	LastPostAt    time.Time `gorm:"autoCreateTime"`
+	LastCommentAt time.Time `gorm:"autoCreateTime"`
 }

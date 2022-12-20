@@ -24,7 +24,7 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("comments/create", controllers.CreateComment)
 	r.POST("comments/updatetext", controllers.UpdateCommentText)
 	r.DELETE("comments/delete/:commentId", controllers.DeleteComment)
-	
+
 	// misc
 	r.GET("ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

@@ -24,22 +24,22 @@ func init() {
 }
 
 func CORSConfig() cors.Config {
-    corsConfig := cors.DefaultConfig()
-    corsConfig.AllowOrigins = []string{
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{
 		"http://localhost:3000",
 		"http://192.168.0.100:3000",
 		"https://app.onenus.link",
 	}
-    corsConfig.AllowCredentials = true
-    corsConfig.AddAllowHeaders("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers", "Content-Type", "X-XSRF-TOKEN", "Accept", "Origin", "X-Requested-With", "Authorization")
-    corsConfig.AddAllowMethods("GET", "POST", "PUT", "DELETE")
-    return corsConfig
+	corsConfig.AllowCredentials = true
+	corsConfig.AddAllowHeaders("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers", "Content-Type", "X-XSRF-TOKEN", "Accept", "Origin", "X-Requested-With", "Authorization")
+	corsConfig.AddAllowMethods("GET", "POST", "PUT", "DELETE")
+	return corsConfig
 }
 
 func SimulateLatency() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		time.Sleep(time.Second * time.Duration(rand.Float64() * 2))
-		return 
+		time.Sleep(time.Second * time.Duration(rand.Float64()*2))
+		return
 	}
 }
 

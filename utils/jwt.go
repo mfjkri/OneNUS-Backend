@@ -10,8 +10,8 @@ import (
 
 func GenerateJWT(username string) (tokenString string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub" : username,
-		"exp" : time.Now().Add(time.Hour * 8760).Unix(),
+		"sub": username,
+		"exp": time.Now().Add(time.Hour * 8760).Unix(),
 	})
 
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
@@ -23,17 +23,17 @@ func DecodeJWT(tokenString string) (username string, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-	
+
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
-	
+
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		username = claims["sub"].(string)
-		return 
+		return
 	}
 
-	username = "" 
-	return 
+	username = ""
+	return
 }
 
 func ValidateJWT(tokenString string, username string) (jwtValid bool, err error) {
@@ -41,9 +41,9 @@ func ValidateJWT(tokenString string, username string) (jwtValid bool, err error)
 
 	if decoded_username == username {
 		jwtValid = true
-		return 
+		return
 	}
 
 	jwtValid = false
-	return 
+	return
 }

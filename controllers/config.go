@@ -20,7 +20,7 @@ var USER_COMMENT_COOLDOWN = -time.Minute * 1
 /*                               Sorting Options                              */
 /* -------------------------------------------------------------------------- */
 const (
-	ByRecent 	= "commented_at DESC, id DESC"
-	ByNew 		= "created_at  DESC, id DESC"
-	ByHot 		= "comments_count DESC, commented_at DESC"
+	ByRecent = "commented_at DESC, id DESC"
+	ByNew    = "created_at  DESC, id DESC"
+	ByHot    = "comments_count DESC, commented_at DESC"
 )
