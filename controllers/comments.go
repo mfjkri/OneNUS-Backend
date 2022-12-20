@@ -188,6 +188,7 @@ func CreateComment(c *gin.Context) {
 	database.DB.Save(&user)
 
 	// Update CommentsCount for Post
+	post.CommentedAt = timeNow
 	post.CommentsCount += 1
 	database.DB.Save(&post)
 
