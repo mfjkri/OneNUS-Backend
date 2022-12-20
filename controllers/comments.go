@@ -3,6 +3,7 @@ package controllers
 import (
 	"math"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/One-NUS-Backend/database"
@@ -298,7 +299,14 @@ func DeleteComment(c *gin.Context) {
 	// Delete Comment
 	database.DB.Delete(&comment)
 
-	// Decrement CommentsCount for Post
+	// Update Post metadata
+	var lastComment models.Comment
+	database.DB.Table("comments").Where("post_id = ?", post.ID).Order("created_at DESC, id DESC").First(&lastComment)
+	if lastComment.ID != 0 {
+		post.CommentedAt = lastComment.CreatedAt
+	} else {
+		post.CommentedAt = time.Unix(0, 0)
+	}
 	post.CommentsCount -= 1
 	database.DB.Save(&post)
 
