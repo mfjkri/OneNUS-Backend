@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"math"
 	"net/http"
 	"time"
@@ -200,7 +201,8 @@ func CreatePost(c *gin.Context) {
 	// Prevent frequent CreatePosts by User
 	timeNow, canCreatePost := utils.CheckTimeIsAfter(user.LastPostAt, USER_POST_COOLDOWN)
 	if canCreatePost == false {
-		c.JSON(http.StatusForbidden, gin.H{"message": "Creating posts too frequently. Please try again later."})
+		cdLeft := utils.GetCooldownLeft(user.LastPostAt, USER_POST_COOLDOWN, timeNow)
+		c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("Creating posts too frequently. Please try again in %ds", int(cdLeft.Seconds()))})
 		return
 	}
 
@@ -274,7 +276,8 @@ func UpdatePostText(c *gin.Context) {
 	// Prevent frequent UpdatePostText by User
 	timeNow, canCreatePost := utils.CheckTimeIsAfter(user.LastPostAt, USER_POST_COOLDOWN)
 	if canCreatePost == false {
-		c.JSON(http.StatusForbidden, gin.H{"message": "Updating posts too frequently. Please try again later."})
+		cdLeft := utils.GetCooldownLeft(user.LastPostAt, USER_POST_COOLDOWN, timeNow)
+		c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("Updating posts too frequently. Please try again in %ds", int(cdLeft.Seconds()))})
 		return
 	}
 

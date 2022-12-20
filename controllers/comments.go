@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"math"
 	"net/http"
 	"time"
@@ -157,7 +158,8 @@ func CreateComment(c *gin.Context) {
 	// Prevent frequent CreatePosts by User
 	timeNow, canCreateComment := utils.CheckTimeIsAfter(user.LastCommentAt, USER_COMMENT_COOLDOWN)
 	if canCreateComment == false {
-		c.JSON(http.StatusForbidden, gin.H{"message": "Creating comments too frequently. Please try again later."})
+		cdLeft := utils.GetCooldownLeft(user.LastCommentAt, USER_COMMENT_COOLDOWN, timeNow)
+		c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("Creating comments too frequently. Please try again in %ds", int(cdLeft.Seconds()))})
 		return
 	}
 
@@ -231,7 +233,8 @@ func UpdateCommentText(c *gin.Context) {
 	// Prevent frequent UpdateCommentText by User
 	timeNow, canUpdateComment := utils.CheckTimeIsAfter(user.LastCommentAt, USER_COMMENT_COOLDOWN)
 	if canUpdateComment == false {
-		c.JSON(http.StatusForbidden, gin.H{"message": "Updating comments too frequently. Please try again later."})
+		cdLeft := utils.GetCooldownLeft(user.LastCommentAt, USER_COMMENT_COOLDOWN, timeNow)
+		c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("Updating comments too frequently. Please try again in %ds", int(cdLeft.Seconds()))})
 		return
 	}
 

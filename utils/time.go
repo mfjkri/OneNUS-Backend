@@ -21,3 +21,7 @@ func CheckTimeIsAfter(lastUpdate time.Time, delay time.Duration) (timeNow time.T
 	)
 	return
 }
+
+func GetCooldownLeft(lastUpdate time.Time, delay time.Duration, timeNow time.Time) time.Duration {
+	return lastUpdate.Add(delay).Sub(timeNow)
+}
