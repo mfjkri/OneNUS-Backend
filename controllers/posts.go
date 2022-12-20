@@ -333,8 +333,8 @@ func DeletePost(c *gin.Context) {
 		return
 	}
 
-	// Check User is the author
-	if post.UserID != user.ID {
+	// Check User is the author or is admin
+	if (post.UserID != user.ID) && (user.Role != ADMIN) {
 		c.JSON(http.StatusForbidden, gin.H{"message": "You do not have valid permissions."})
 		return
 	}
