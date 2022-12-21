@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
 func Connect() {
-	connection, err := gorm.Open(postgres.Open(os.Getenv("DB")), &gorm.Config{})
+	connection, err := gorm.Open(mysql.Open(os.Getenv("DB")), &gorm.Config{})
 
 	if err != nil {
 		panic("Failed to connect to database!")
