@@ -116,11 +116,11 @@ func GetComments(c *gin.Context) {
 		defaultSortOption = ByRecent
 	}
 
-	// Fetch Posts from [offsetCount, offsetCount + perPage]
+	// Fetch Comments from [offsetCount, offsetCount + perPage]
 	var comments []models.Comment
 	dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetCommentCount)).Find(&comments)
 
-	// Return fetched posts
+	// Return fetched comments
 	c.JSON(http.StatusAccepted, CreateCommentsResponse(&comments, totalCommentsCount))
 }
 
@@ -191,11 +191,17 @@ func CreateComment(c *gin.Context) {
 	user.LastCommentAt = timeNow
 	database.DB.Save(&user)
 
-	// Update CommentsCount for Post
+	// Update CommentsCount and CommentedAt for Post
+	postUpdatedAt := post.UpdatedAt
 	post.CommentedAt = timeNow
 	post.CommentsCount += 1
 	database.DB.Save(&post)
 
+	// By default post.UpdatedAt will get updated by these changes but we don't want that.
+	// UpdatedAt should only reflect changes to post.Text
+	database.DB.Model(&post).Update("updated_at", postUpdatedAt)
+
+	// Return new Comment data
 	c.JSON(http.StatusAccepted, CreateCommentResponse(&comment))
 }
 
@@ -251,7 +257,7 @@ func UpdateCommentText(c *gin.Context) {
 	database.DB.Save(&comment)
 	database.DB.Save(&user)
 
-	// Return new Post data
+	// Return updated Comment data
 	c.JSON(http.StatusAccepted, CreateCommentResponse(&comment))
 }
 
@@ -305,6 +311,7 @@ func DeleteComment(c *gin.Context) {
 
 	// Update Post metadata
 	var lastComment models.Comment
+	postUpdatedAt := post.UpdatedAt
 	database.DB.Table("comments").Where("post_id = ?", post.ID).Order("created_at DESC, id DESC").First(&lastComment)
 	if lastComment.ID != 0 {
 		post.CommentedAt = lastComment.CreatedAt
@@ -314,7 +321,11 @@ func DeleteComment(c *gin.Context) {
 	post.CommentsCount -= 1
 	database.DB.Save(&post)
 
-	// Return new Post data
+	// By default post.UpdatedAt will get updated by these changes but we don't want that.
+	// UpdatedAt should only reflect changes to post.Text
+	database.DB.Model(&post).Update("updated_at", postUpdatedAt)
+
+	// Return deleted Comment data
 	c.JSON(http.StatusAccepted, CreateCommentResponse(&comment))
 }
 
