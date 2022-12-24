@@ -11,7 +11,9 @@ import (
 func GenerateJWT(username string) (tokenString string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": username,
-		"exp": time.Now().Add(time.Hour * 8760).Unix(),
+		// JWT token valid for 1 week
+		// TODO Set to 15 minutes and add refreshToken logic
+		"exp": time.Now().Add(time.Hour * 168).Unix(),
 	})
 
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
