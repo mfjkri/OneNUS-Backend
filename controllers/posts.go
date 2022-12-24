@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -220,17 +221,15 @@ func CreatePost(c *gin.Context) {
 	}
 
 	// Try to create new Post
-	initialCommentsCount := uint(0)
-	initialStarsCount := uint(0)
 	post := models.Post{
-		Title:         utils.TrimString(json.Title, MAX_POST_TITLE_CHAR),
+		Title:         utils.TrimString(strings.TrimSpace(json.Title), MAX_POST_TITLE_CHAR),
 		Tag:           json.Tag,
-		Text:          utils.TrimString(json.Text, MAX_POST_TEXT_CHAR),
+		Text:          utils.TrimString(strings.TrimSpace(json.Text), MAX_POST_TEXT_CHAR),
 		Author:        user.Username,
 		User:          user,
-		CommentsCount: initialCommentsCount,
+		CommentsCount: 0,
 		CommentedAt:   time.Unix(0, 0),
-		StarsCount:    initialStarsCount,
+		StarsCount:    0,
 	}
 	new_entry := database.DB.Create(&post)
 

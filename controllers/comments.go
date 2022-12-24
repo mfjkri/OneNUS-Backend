@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -171,7 +172,7 @@ func CreateComment(c *gin.Context) {
 
 	// Try to create new Comment
 	comment := models.Comment{
-		Text:   utils.TrimString(json.Text, MAX_COMMENT_TEXT_CHAR),
+		Text:   utils.TrimString(strings.TrimSpace(json.Text), MAX_COMMENT_TEXT_CHAR),
 		Author: user.Username,
 		User:   user,
 		Post:   post,
