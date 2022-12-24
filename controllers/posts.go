@@ -295,7 +295,7 @@ func UpdatePostText(c *gin.Context) {
 	}
 
 	// Replace Post text and update User LastPostAt
-	post.Text = utils.TrimString(json.Text, MAX_POST_TEXT_CHAR)
+	post.Text = utils.TrimString(strings.TrimSpace(json.Text), MAX_POST_TEXT_CHAR)
 	user.LastPostAt = timeNow
 	database.DB.Save(&post)
 	database.DB.Save(&user)

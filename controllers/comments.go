@@ -246,7 +246,7 @@ func UpdateCommentText(c *gin.Context) {
 	}
 
 	// Replace Comment text and update User LastCommentAt
-	comment.Text = utils.TrimString(json.Text, MAX_COMMENT_TEXT_CHAR)
+	comment.Text = utils.TrimString(strings.TrimSpace(json.Text), MAX_COMMENT_TEXT_CHAR)
 	user.LastCommentAt = timeNow
 	database.DB.Save(&comment)
 	database.DB.Save(&user)
