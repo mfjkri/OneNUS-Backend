@@ -40,14 +40,18 @@ You can find the live demo of the website that consumes this project [here](http
    $ cd One-NUS-Backend
    ```
 
-3. Required config files.
+3. Copy the template `.env` file.
 
-   Create a dotenv file `.env` under the root directory with the following variables:
+   ```
+   $ cp .env.example .env
+   ```
+
+   Modify the following environment variables in the new `.env` file accordingly:
 
    ```python
-   PORT = 8080 # Port number that the project  will be listening to
-   DB = "host=$HOSTNAME user=$USERNAME password=$PASSWORD dbname=$DATABASE_NAME port=$PORT_NUMBER sslmode=disable" # Credentials to connect to database
-   JWT_SECRET: JWT_SECRET # Random string that is used to generate JWT tokens
+   PORT=8080 # Port number that the project  will be listening to
+   DB="USERNAME:PASSWORD@tcp(HOSTNAME:PORT_NUMBER)/DATABASE_NAME?charset=utf8mb4&parseTime=True&loc=Local" # Credentials to connect to database
+   JWT_SECRET=JWT_SECRET # Random string that is used to generate JWT tokens
    ```
 
 4. All set!
