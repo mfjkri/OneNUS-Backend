@@ -8,9 +8,9 @@ import (
 
 	"github.com/go-faker/faker/v4"
 	"github.com/go-faker/faker/v4/pkg/options"
-	"github.com/mfjkri/One-NUS-Backend/controllers"
-	"github.com/mfjkri/One-NUS-Backend/database"
-	"github.com/mfjkri/One-NUS-Backend/models"
+	"github.com/mfjkri/OneNUS-Backend/controllers"
+	"github.com/mfjkri/OneNUS-Backend/database"
+	"github.com/mfjkri/OneNUS-Backend/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

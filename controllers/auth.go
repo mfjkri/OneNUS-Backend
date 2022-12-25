@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mfjkri/One-NUS-Backend/database"
-	"github.com/mfjkri/One-NUS-Backend/models"
-	"github.com/mfjkri/One-NUS-Backend/utils"
+	"github.com/mfjkri/OneNUS-Backend/database"
+	"github.com/mfjkri/OneNUS-Backend/models"
+	"github.com/mfjkri/OneNUS-Backend/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 

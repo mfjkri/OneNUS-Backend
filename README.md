@@ -1,6 +1,6 @@
 # CVWO Assignment Project
 
-Backend for [OneNUS](https://github.com/mfjkri/One-NUS).
+Backend for [OneNUS](https://github.com/mfjkri/OneNUS).
 
 <br/>
 
@@ -32,12 +32,12 @@ You can find the live demo of the website that consumes this project [here](http
 
 1. Clone this repo.
    ```
-   $ git clone https://github.com/mfjkri/One-NUS-Backend.git
+   $ git clone https://github.com/mfjkri/OneNUS-Backend.git
    ```
 2. Change into the repo directory.
 
    ```
-   $ cd One-NUS-Backend
+   $ cd OneNUS-Backend
    ```
 
 3. Copy the template `.env` file.
@@ -241,4 +241,4 @@ Signed SSL certificate for the subdomain is provided by [Let's Encrypt](https://
 
 # Reflections
 
-See [here](https://github.com/mfjkri/One-NUS#reflection) for my overall reflections after working on this project.
+See [here](https://github.com/mfjkri/OneNUS#reflection) for my overall reflections after working on this project.

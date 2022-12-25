@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/mfjkri/One-NUS-Backend/database"
-	"github.com/mfjkri/One-NUS-Backend/routes"
-	"github.com/mfjkri/One-NUS-Backend/seed"
-	"github.com/mfjkri/One-NUS-Backend/utils"
+	"github.com/mfjkri/OneNUS-Backend/database"
+	"github.com/mfjkri/OneNUS-Backend/routes"
+	"github.com/mfjkri/OneNUS-Backend/seed"
+	"github.com/mfjkri/OneNUS-Backend/utils"
 )
 
 func init() {

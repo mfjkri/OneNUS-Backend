@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	"github.com/mfjkri/One-NUS-Backend/models"
+	"github.com/mfjkri/OneNUS-Backend/models"
 )
 
 func Migrate() {

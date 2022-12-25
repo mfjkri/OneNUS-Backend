@@ -3,7 +3,7 @@ package seed
 import (
 	"time"
 
-	"github.com/mfjkri/One-NUS-Backend/models"
+	"github.com/mfjkri/OneNUS-Backend/models"
 )
 
 type Post struct {

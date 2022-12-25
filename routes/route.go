@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/mfjkri/One-NUS-Backend/controllers"
+	"github.com/mfjkri/OneNUS-Backend/controllers"
 )
 
 func SetupRoutes(r *gin.Engine) {

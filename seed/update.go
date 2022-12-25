@@ -3,8 +3,8 @@ package seed
 import (
 	"fmt"
 
-	"github.com/mfjkri/One-NUS-Backend/database"
-	"github.com/mfjkri/One-NUS-Backend/models"
+	"github.com/mfjkri/OneNUS-Backend/database"
+	"github.com/mfjkri/OneNUS-Backend/models"
 )
 
 func UpdateUsers() {

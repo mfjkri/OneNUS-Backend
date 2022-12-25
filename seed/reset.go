@@ -3,7 +3,7 @@ package seed
 import (
 	"fmt"
 
-	"github.com/mfjkri/One-NUS-Backend/database"
+	"github.com/mfjkri/OneNUS-Backend/database"
 )
 
 func DeleteUsers() {

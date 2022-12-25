@@ -1,4 +1,4 @@
-module github.com/mfjkri/One-NUS-Backend
+module github.com/mfjkri/OneNUS-Backend
 
 go 1.19
 
