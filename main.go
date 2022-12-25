@@ -13,12 +13,9 @@ import (
 )
 
 func init() {
-	if os.Getenv("DEPLOYED_MODE") == "" {
-		utils.LoadEnv()
-	}
+	utils.LoadEnv()
 	database.Connect()
 	database.Migrate()
-
 }
 
 func CORSConfig() cors.Config {
@@ -35,16 +32,24 @@ func CORSConfig() cors.Config {
 }
 
 func main() {
-	router := gin.Default()
-
+	// Some command utilities
 	cmd := flag.String("cmd", "", "")
 	flag.Parse()
 	str_cmd := string(*cmd)
 
+	// Set Gin mode based on env var
+	gin.SetMode(os.Getenv("GIN_MODE"))
+
+	// Create a new router
+	router := gin.Default()
+
+	// Configure CORS
 	router.Use(cors.New(CORSConfig()))
 
+	// Initialize the Routes
 	routes.SetupRoutes(router)
 
+	// Check for any command parameters used
 	if str_cmd == "reset" {
 		seed.DeleteAll()
 	} else if str_cmd == "seed" {
@@ -55,5 +60,6 @@ func main() {
 		seed.UpdatePosts()
 	}
 
+	// Start listening
 	router.Run()
 }
