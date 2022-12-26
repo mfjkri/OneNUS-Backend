@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/OneNUS-Backend/controllers"
 )
@@ -13,7 +15,7 @@ func RegisterPublicRoutes(r *gin.Engine) {
 	// misc
 	r.GET("ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "pong 1",
+			"message": "oneNUS " + os.Getenv("APP_VERSION"),
 		})
 	})
 }
