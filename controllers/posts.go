@@ -77,14 +77,13 @@ func CreatePostsResponse(posts *[]models.Post, totalPostsCount int64) GetPostsRe
 }
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
 /*    GetPosts | route: /posts/get/:perPage/:pageNumber/:sortBy/:filterTag    */
 /* -------------------------------------------------------------------------- */
 type GetPostsRequest struct {
 	PerPage    uint   `uri:"perPage" binding:"required"`
 	PageNumber uint   `uri:"pageNumber" binding:"required"`
-	SortBy     string `uri:"sortBy"`
+	SortOption string `uri:"sortOption"`
+	SortOrder  string `uri:"sortOrder"`
 	FilterTag  string `uri:"filterTag"`
 }
 
@@ -125,21 +124,32 @@ func GetPosts(c *gin.Context) {
 
 	// Sort Posts by sort option provided (defaults to byNew)
 	defaultSortOption := ByNew
-	if json.SortBy == "byRecent" {
+	if json.SortOption == "recent" {
 		defaultSortOption = ByRecent
-	} else if json.SortBy == "byHot" {
+	} else if json.SortOption == "hot" {
 		defaultSortOption = ByHot
 	}
 
 	// Fetch Posts from [offsetCount, offsetCount + perPage]
+	// results order depends on SortOption and SortOrder
 	var posts []models.Post
-	dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetPostCount)).Find(&posts)
+	if json.SortOrder == "ascending" {
+		// Reverse page number based on totalPostsCount
+		leftOverRecords := math.Min(float64(perPage), float64(totalPostsCount-offsetPostCount))
+		offsetPostCount = totalPostsCount - offsetPostCount - perPage
+		dbContext.Limit(int(leftOverRecords)).Order(defaultSortOption).Offset(int(offsetPostCount)).Find(&posts)
+
+		// Reverse the page results for descending order
+		for i, j := 0, len(posts)-1; i < j; i, j = i+1, j-1 {
+			posts[i], posts[j] = posts[j], posts[i]
+		}
+	} else {
+		dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetPostCount)).Find(&posts)
+	}
 
 	// Return fetched posts
 	c.JSON(http.StatusAccepted, CreatePostsResponse(&posts, totalPostsCount))
 }
-
-/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /*                GetPostByID | route : /posts/getbyid/:postId                */
@@ -173,8 +183,6 @@ func GetPostByID(c *gin.Context) {
 	// Return fetched Post
 	c.JSON(http.StatusAccepted, CreatePostResponse(&post))
 }
-
-/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /*                        CreatePost | route: /post/get                       */
@@ -249,8 +257,6 @@ func CreatePost(c *gin.Context) {
 }
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
 /*                  UpdatePostText | route: /posts/updatetext                 */
 /* -------------------------------------------------------------------------- */
 type UpdatePostTextRequest struct {
@@ -305,8 +311,6 @@ func UpdatePostText(c *gin.Context) {
 }
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
 /*                     DeletePost | route: /delete/:postId                    */
 /* -------------------------------------------------------------------------- */
 type DeletePostRequest struct {
@@ -346,5 +350,3 @@ func DeletePost(c *gin.Context) {
 	// Return new Post data
 	c.JSON(http.StatusAccepted, CreatePostResponse(&post))
 }
-
-/* -------------------------------------------------------------------------- */

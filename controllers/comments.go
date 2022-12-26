@@ -61,15 +61,14 @@ func CreateCommentsResponse(comments *[]models.Comment, totalCommentsCount int64
 }
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
 /*   GetComments | route: comments/get/:postId/:perPage/:pageNumber/:sortBy   */
 /* -------------------------------------------------------------------------- */
 type GetCommentsRequest struct {
 	PostId     uint   `uri:"postId" binding:"required"`
 	PerPage    uint   `uri:"perPage" binding:"required"`
 	PageNumber uint   `uri:"pageNumber" binding:"required"`
-	SortBy     string `uri:"sortBy"`
+	SortOption string `uri:"sortOption"`
+	SortOrder  string `uri:"sortOrder"`
 }
 
 func GetComments(c *gin.Context) {
@@ -112,19 +111,30 @@ func GetComments(c *gin.Context) {
 
 	// Sort Comments by sort option provided (defaults to byNew)
 	defaultSortOption := ByNew
-	if json.SortBy == "byRecent" {
+	if json.SortOption == "recent" {
 		defaultSortOption = ByRecent
 	}
 
 	// Fetch Comments from [offsetCount, offsetCount + perPage]
+	// results order depends on SortOption and SortOrder
 	var comments []models.Comment
-	dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetCommentCount)).Find(&comments)
+	if json.SortOrder == "ascending" {
+		// Reverse page number based on totalCommentsCount
+		leftOverRecords := math.Min(float64(perPage), float64(totalCommentsCount-offsetCommentCount))
+		offsetCommentCount = totalCommentsCount - offsetCommentCount - perPage
+		dbContext.Limit(int(leftOverRecords)).Order(defaultSortOption).Offset(int(offsetCommentCount)).Find(&comments)
+
+		// Reverse the page results for descending order
+		for i, j := 0, len(comments)-1; i < j; i, j = i+1, j-1 {
+			comments[i], comments[j] = comments[j], comments[i]
+		}
+	} else {
+		dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetCommentCount)).Find(&comments)
+	}
 
 	// Return fetched comments
 	c.JSON(http.StatusAccepted, CreateCommentsResponse(&comments, totalCommentsCount))
 }
-
-/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /*                   CreateComment | route: comments/create                   */
@@ -206,8 +216,6 @@ func CreateComment(c *gin.Context) {
 }
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
 /*               UpdateCommentText | route: comments/updatetext               */
 /* -------------------------------------------------------------------------- */
 type UpdateCommentTextRequest struct {
@@ -260,8 +268,6 @@ func UpdateCommentText(c *gin.Context) {
 	// Return updated Comment data
 	c.JSON(http.StatusAccepted, CreateCommentResponse(&comment))
 }
-
-/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /*              DeleteComment | route: comments/delete/:commentId             */
@@ -328,5 +334,3 @@ func DeleteComment(c *gin.Context) {
 	// Return deleted Comment data
 	c.JSON(http.StatusAccepted, CreateCommentResponse(&comment))
 }
-
-/* -------------------------------------------------------------------------- */

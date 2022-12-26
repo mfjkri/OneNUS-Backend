@@ -11,14 +11,14 @@ func RegisterProtectedRoutes(r *gin.Engine) {
 	r.POST("auth/delete", controllers.DeleteUser)
 
 	// posts.go
-	r.GET("posts/get/:perPage/:pageNumber/:sortBy/:filterTag", controllers.GetPosts)
+	r.GET("posts/get/:perPage/:pageNumber/:sortOption/:sortOrder/:filterTag", controllers.GetPosts)
 	r.GET("posts/getbyid/:postId", controllers.GetPostByID)
 	r.POST("posts/create", controllers.CreatePost)
 	r.POST("posts/updatetext", controllers.UpdatePostText)
 	r.DELETE("posts/delete/:postId", controllers.DeletePost)
 
 	// comments.go
-	r.GET("comments/get/:postId/:perPage/:pageNumber/:sortBy", controllers.GetComments)
+	r.GET("comments/get/:postId/:perPage/:pageNumber/:sortOption/:sortOrder", controllers.GetComments)
 	r.POST("comments/create", controllers.CreateComment)
 	r.POST("comments/updatetext", controllers.UpdateCommentText)
 	r.DELETE("comments/delete/:commentId", controllers.DeleteComment)
