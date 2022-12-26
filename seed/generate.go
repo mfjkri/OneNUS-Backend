@@ -3,6 +3,8 @@ package seed
 import (
 	"fmt"
 	"math/rand"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,32 +16,72 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GenerateUser() models.User {
-	password, _ := bcrypt.GenerateFromPassword([]byte("password"), 10)
-	return models.User{Username: strings.ToLower(faker.LastName(options.WithRandomStringLength(10), options.WithGenerateUniqueValues(true))), Password: password}
+var NEW_USERS_COUNT int = 10
+var MAX_POST_PER_USER = 5
+var MAX_COMMENT_PER_USER_PER_POST = 2
+var POST_CREATION_TIME_OFFSET_HOURS = time.Duration(24 * 5)
+
+func LoadGenerateConfig() {
+	newUsersCount, err := strconv.Atoi(os.Getenv("GENERATE_NEW_USERS_COUNT"))
+	if err == nil {
+		NEW_USERS_COUNT = newUsersCount
+	}
+
+	maxPostPerUser, err := strconv.Atoi(os.Getenv("GENERATE_MAX_POST_PER_USER"))
+	if err == nil {
+		MAX_POST_PER_USER = maxPostPerUser
+	}
+
+	maxCommentPerUserPerPost, err := strconv.Atoi(os.Getenv("GENERATE_MAX_COMMENT_PER_USER_PER_POST"))
+	if err == nil {
+		MAX_COMMENT_PER_USER_PER_POST = maxCommentPerUserPerPost
+	}
+
+	postCreationTimeOffset, err := strconv.Atoi(os.Getenv("GENERATE_POST_CREATION_TIME_OFFSET_HOURS"))
+	if err == nil {
+		POST_CREATION_TIME_OFFSET_HOURS = time.Duration(postCreationTimeOffset)
+	}
 }
 
-func GenerateUsers(number int) []models.User {
-	users := make([]models.User, number)
+func FastForwardTime(currentTime time.Time) time.Time {
+	return currentTime.Add(
+		(time.Millisecond * time.Duration(rand.Intn(100))) +
+			(time.Second * time.Duration(rand.Intn(60))) +
+			(time.Minute * time.Duration(rand.Intn(60))))
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               Generate Users                               */
+/* -------------------------------------------------------------------------- */
+func GenerateUser() models.User {
+	password, _ := bcrypt.GenerateFromPassword([]byte("2%2$iK66&*R#S38MY9tJ*5UZ6f!7f"), 10)
+	return models.User{
+		Username: strings.ToLower(faker.LastName(options.WithRandomStringLength(10), options.WithGenerateUniqueValues(true))),
+		Password: password,
+		Role:     "member",
+	}
+}
+
+func GenerateUsers(number int) {
+	fmt.Println("Generating users", number)
 
 	for index := 1; index <= number; index++ {
 		user := GenerateUser()
-		users = append(users, user)
 		database.DB.Create(&user)
 	}
 
-	return users
+	fmt.Println("Users generated.")
 }
 
+/* -------------------------------------------------------------------------- */
+/*                               Generate Posts                               */
+/* -------------------------------------------------------------------------- */
 func ChooseRandomTag() string {
 	return models.ValidTags[rand.Intn(len(models.ValidTags))]
 }
 
-func GeneratePost(user models.User, creationTime time.Time) Post {
-	return Post{
-		CreatedAt: creationTime,
-		UpdatedAt: creationTime,
-
+func GeneratePost(user models.User) models.Post {
+	return models.Post{
 		Title: faker.Sentence(options.WithRandomStringLength(uint(controllers.MAX_POST_TITLE_CHAR))),
 		Tag:   ChooseRandomTag(),
 		Text:  faker.Paragraph(options.WithRandomStringLength(uint(controllers.MAX_POST_TEXT_CHAR))),
@@ -53,38 +95,39 @@ func GeneratePost(user models.User, creationTime time.Time) Post {
 	}
 }
 
-func GeneratePosts(number int, user models.User, startTime time.Time) {
-	initialTime := startTime.Add(time.Duration(rand.Intn(100)))
-
+func GeneratePosts(number int, user models.User, creationTime time.Time) {
 	for index := 1; index <= number; index++ {
-		post := GeneratePost(user, initialTime)
+		post := GeneratePost(user)
 		database.DB.Create(&post)
-		initialTime.Add(
-			(time.Millisecond * time.Duration(rand.Intn(100))) +
-				(time.Second * time.Duration(rand.Intn(60))) +
-				(time.Minute * time.Duration(rand.Intn(60))))
+		database.DB.Model(&post).Update("created_at", creationTime)
+		database.DB.Model(&post).Update("updated_at", creationTime)
+
+		creationTime = FastForwardTime(creationTime)
 	}
 }
 
-func GeneratePostsForEachUser() {
+func GeneratePostsForEachUser(maxPostPerUser int, initialTime time.Time) {
+	fmt.Println("Generating posts for each generated user with max post of:", maxPostPerUser)
+
 	var users []models.User
 	database.DB.Find(&users)
 
-	initialTime := time.Now().Add(-time.Hour * 24 * 20)
 	for _, user := range users {
 		GeneratePosts(
-			rand.Intn(12),
+			rand.Intn(maxPostPerUser),
 			user,
 			initialTime,
 		)
+		initialTime = FastForwardTime(initialTime)
 	}
+	fmt.Println("Posts generated.")
 }
 
-func GenerateComment(user models.User, post models.Post, creationTime time.Time) Comment {
-	return Comment{
-		CreatedAt: creationTime,
-		UpdatedAt: creationTime,
-
+/* -------------------------------------------------------------------------- */
+/*                              Generate Comments                             */
+/* -------------------------------------------------------------------------- */
+func GenerateComment(user models.User, post models.Post) models.Comment {
+	return models.Comment{
 		Text: faker.Paragraph(options.WithRandomStringLength(uint(controllers.MAX_COMMENT_TEXT_CHAR))),
 
 		Author: user.Username,
@@ -95,19 +138,21 @@ func GenerateComment(user models.User, post models.Post, creationTime time.Time)
 }
 
 func GenerateComments(number int, user models.User, post models.Post) {
-	initialTime := post.CreatedAt.Add(time.Duration(rand.Intn(100)))
+	creationTime := FastForwardTime(post.CreatedAt)
 
 	for index := 1; index <= number; index++ {
-		comment := GenerateComment(user, post, initialTime)
+		comment := GenerateComment(user, post)
 		database.DB.Create(&comment)
-		initialTime = initialTime.Add(
-			(time.Millisecond * time.Duration(rand.Intn(100))) +
-				(time.Second * time.Duration(rand.Intn(60))) +
-				(time.Minute * time.Duration(rand.Intn(60))))
+		database.DB.Model(&comment).Update("created_at", creationTime)
+		database.DB.Model(&comment).Update("updated_at", creationTime)
+
+		creationTime = FastForwardTime(FastForwardTime(creationTime))
 	}
 }
 
-func GenerateCommentsForEachPost() {
+func GenerateCommentsForEachPost(maxRandomCommentsPerUserPerPost int) {
+	fmt.Println("Generating comments for each generated post with max comments per user per post of:", maxRandomCommentsPerUserPerPost)
+
 	var users []models.User
 	database.DB.Find(&users)
 
@@ -116,25 +161,30 @@ func GenerateCommentsForEachPost() {
 
 	for _, user := range users {
 		shouldComment := rand.Float64() > 0.4
-
 		if shouldComment {
 			for _, post := range posts {
 				GenerateComments(
-					rand.Intn(3),
+					rand.Intn(maxRandomCommentsPerUserPerPost),
 					user,
 					post,
 				)
 			}
 		}
 	}
+
+	fmt.Println("Comments generated.")
 }
+
+/* -------------------------------------------------------------------------- */
 
 func GenerateData() {
 	fmt.Println("Seeding...")
 
-	GenerateUsers(20)
-	GeneratePostsForEachUser()
-	GenerateCommentsForEachPost()
+	LoadGenerateConfig()
+
+	GenerateUsers(NEW_USERS_COUNT)
+	GeneratePostsForEachUser(MAX_POST_PER_USER, time.Now().Add(time.Hour*POST_CREATION_TIME_OFFSET_HOURS))
+	GenerateCommentsForEachPost(MAX_COMMENT_PER_USER_PER_POST)
 
 	fmt.Println("Seeding complete!")
 }
