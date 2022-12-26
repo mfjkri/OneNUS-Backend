@@ -13,6 +13,7 @@ import (
 )
 
 func init() {
+	os.Setenv("TZ", "Asia/Singapore")
 	utils.LoadEnv()
 	database.Connect()
 	database.Migrate()
