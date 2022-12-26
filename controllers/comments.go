@@ -211,6 +211,8 @@ func CreateComment(c *gin.Context) {
 	// UpdatedAt should only reflect changes to post.Text
 	database.DB.Model(&post).Update("updated_at", postUpdatedAt)
 
+	fmt.Printf("%s has created a comment.\n\tPost title: %s\n\tComment text: %s\n", user.Username, post.Title, comment.Text)
+
 	// Return new Comment data
 	c.JSON(http.StatusAccepted, CreateCommentResponse(&comment))
 }
@@ -264,6 +266,8 @@ func UpdateCommentText(c *gin.Context) {
 	user.LastCommentAt = timeNow
 	database.DB.Save(&comment)
 	database.DB.Save(&user)
+
+	fmt.Printf("%s has updated a comment.\n\tNew text: %s\n", user.Username, comment.Text)
 
 	// Return updated Comment data
 	c.JSON(http.StatusAccepted, CreateCommentResponse(&comment))
@@ -330,6 +334,8 @@ func DeleteComment(c *gin.Context) {
 	// By default post.UpdatedAt will get updated by these changes but we don't want that.
 	// UpdatedAt should only reflect changes to post.Text
 	database.DB.Model(&post).Update("updated_at", postUpdatedAt)
+
+	fmt.Printf("%s has deleted a comment.\n\tPost title: %s\n\tComment text: %s\n", user.Username, post.Title, comment.Text)
 
 	// Return deleted Comment data
 	c.JSON(http.StatusAccepted, CreateCommentResponse(&comment))

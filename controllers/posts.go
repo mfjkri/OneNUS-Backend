@@ -253,6 +253,8 @@ func CreatePost(c *gin.Context) {
 	user.LastPostAt = timeNow
 	database.DB.Save(&user)
 
+	fmt.Printf("%s has created a post.\n\tPost title: %s\n\tPost text: %s\n", user.Username, post.Title, post.Text)
+
 	c.JSON(http.StatusAccepted, CreatePostResponse(&post))
 }
 
@@ -306,6 +308,8 @@ func UpdatePostText(c *gin.Context) {
 	database.DB.Save(&post)
 	database.DB.Save(&user)
 
+	fmt.Printf("%s has updated a post.\n\tPost title: %s\n\tNew text: %s\n", user.Username, post.Title, post.Text)
+
 	// Return new Post data
 	c.JSON(http.StatusAccepted, CreatePostResponse(&post))
 }
@@ -346,6 +350,8 @@ func DeletePost(c *gin.Context) {
 	}
 
 	database.DB.Delete(&post)
+
+	fmt.Printf("%s has deleted a post.\n\tPost title: %s\n", user.Username, post.Title)
 
 	// Return new Post data
 	c.JSON(http.StatusAccepted, CreatePostResponse(&post))

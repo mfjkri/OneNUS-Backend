@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -127,6 +128,8 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("Registered new user: %s.\n", user.Username)
+
 	// Success, registered and logged in
 	c.JSON(http.StatusAccepted, CreateUserResponseWithJWT(jwt, &user))
 }
@@ -171,6 +174,8 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("%s has logged in.\n", user.Username)
+
 	// Success, logged in
 	c.JSON(http.StatusAccepted, CreateUserResponseWithJWT(jwt, &user))
 }
@@ -186,6 +191,8 @@ func GetUser(c *gin.Context) {
 	if found == false {
 		return
 	}
+
+	fmt.Printf("Retrieved session for %s.\n", user.Username)
 
 	// Success, user found
 	c.JSON(http.StatusAccepted, CreateUserResponse(&user))
@@ -204,6 +211,8 @@ func DeleteUser(c *gin.Context) {
 	}
 
 	database.DB.Delete(&user)
+
+	fmt.Printf("Deleted user: %s.\n", user.Username)
 
 	// Success, user deleted
 	c.JSON(http.StatusAccepted, gin.H{
