@@ -5,12 +5,10 @@ import (
 	"github.com/mfjkri/OneNUS-Backend/controllers"
 )
 
-func SetupRoutes(r *gin.Engine) {
+func RegisterProtectedRoutes(r *gin.Engine) {
 	// auth.go
-	r.POST("auth/register", controllers.RegisterUser)
-	r.POST("auth/login", controllers.LoginUser)
 	r.GET("auth/me", controllers.GetUser)
-	// r.POST("auth/delete", controllers.DeleteUser)
+	r.POST("auth/delete", controllers.DeleteUser)
 
 	// posts.go
 	r.GET("posts/get/:perPage/:pageNumber/:sortBy/:filterTag", controllers.GetPosts)
@@ -24,11 +22,4 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("comments/create", controllers.CreateComment)
 	r.POST("comments/updatetext", controllers.UpdateCommentText)
 	r.DELETE("comments/delete/:commentId", controllers.DeleteComment)
-
-	// misc
-	r.GET("ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong 1",
-		})
-	})
 }

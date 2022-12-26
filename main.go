@@ -46,8 +46,9 @@ func main() {
 	// Configure CORS
 	router.Use(cors.New(CORSConfig()))
 
-	// Initialize the Routes
-	routes.SetupRoutes(router)
+	// Initialize Routes
+	routes.RegisterPublicRoutes(router)
+	routes.RegisterProtectedRoutes(router)
 
 	// Check for any command parameters used
 	if str_cmd == "reset" {
