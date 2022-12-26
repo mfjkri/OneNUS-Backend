@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/gin-contrib/cors"
@@ -62,6 +63,7 @@ func main() {
 		seed.UpdatePosts()
 	}
 
+	fmt.Println("Now listening on port", os.Getenv("PORT"), "...")
 	// Start listening
 	router.Run()
 }

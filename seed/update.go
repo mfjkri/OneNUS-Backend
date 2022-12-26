@@ -21,7 +21,7 @@ func UpdateUsers() {
 
 		database.DB.Save(&user)
 	}
-	fmt.Println("Update complete!")
+	fmt.Println("Update users data complete!")
 }
 
 func UpdatePosts() {
@@ -43,9 +43,10 @@ func UpdatePosts() {
 			post.CommentedAt = lastComment.CreatedAt
 		}
 
+		postUpdatedAt := post.UpdatedAt
 		database.DB.Save(&post)
-		database.DB.Model(&post).Update("updated_at", post.CreatedAt)
+		database.DB.Model(&post).Update("updated_at", postUpdatedAt)
 	}
 
-	fmt.Println("Update complete!")
+	fmt.Println("Update posts data complete!")
 }
