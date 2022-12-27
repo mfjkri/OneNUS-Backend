@@ -118,7 +118,7 @@ func GetPosts(c *gin.Context) {
 
 	// If we are request beyond the bounds of total count, error
 	if (offsetPostCount < 0) || (offsetPostCount > totalPostsCount) {
-		c.JSON(http.StatusForbidden, gin.H{"message": "No more posts found."})
+		c.JSON(http.StatusNoContent, gin.H{"message": "No more posts found."})
 		return
 	}
 

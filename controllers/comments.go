@@ -105,7 +105,7 @@ func GetComments(c *gin.Context) {
 
 	// If we are request beyond the bounds of total count, error
 	if (offsetCommentCount < 0) || (offsetCommentCount > totalCommentsCount) {
-		c.JSON(http.StatusForbidden, gin.H{"message": "No more comments found."})
+		c.JSON(http.StatusNoContent, gin.H{"message": "No more comments found."})
 		return
 	}
 
