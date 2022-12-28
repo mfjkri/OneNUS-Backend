@@ -10,6 +10,8 @@ type User struct {
 	Username string `gorm:"unique"`
 	Password []byte
 	Role     string
+	Bio      string
+	Private  bool `gorm:"default:false"`
 
 	PostsCount    uint `gorm:"default:0"`
 	CommentsCount uint `gorm:"default:0"`

@@ -15,7 +15,7 @@ import (
 /* -------------------------------------------------------------------------- */
 /*                              Helper functions                              */
 /* -------------------------------------------------------------------------- */
-func FindUserFromID(userID uint, c *gin.Context) (models.User, bool) {
+func FindUserFromID(c *gin.Context, userID uint) (models.User, bool) {
 	var targetUser models.User
 	database.DB.First(&targetUser, userID)
 	if targetUser.ID == 0 {
@@ -59,14 +59,14 @@ func VerifyAuth(c *gin.Context) (user models.User, found bool) {
 }
 
 // Convert a User Model into a JSON format
-type UserResponse struct {
+type AuthResponse struct {
 	ID       uint   `json:"id" binding:"required"`
 	Username string `json:"username" binding:"required"`
 	Role     string `json:"role" binding:"required"`
 }
 
-func CreateUserResponse(user *models.User) UserResponse {
-	return UserResponse{
+func CreateAuthResponse(user *models.User) AuthResponse {
+	return AuthResponse{
 		ID:       user.ID,
 		Username: user.Username,
 		Role:     user.Role,
@@ -74,15 +74,15 @@ func CreateUserResponse(user *models.User) UserResponse {
 }
 
 // Convert a User Model with JWT into a JSON format
-type UserResponseWithJWT struct {
+type AuthResponseWithJWT struct {
 	JWT  string       `json:"jwt" binding:"required"`
-	User UserResponse `json:"user" binding:"required"`
+	User AuthResponse `json:"user" binding:"required"`
 }
 
-func CreateUserResponseWithJWT(jwt string, user *models.User) UserResponseWithJWT {
-	return UserResponseWithJWT{
+func CreateAuthResponseWithJWT(jwt string, user *models.User) AuthResponseWithJWT {
+	return AuthResponseWithJWT{
 		JWT:  jwt,
-		User: CreateUserResponse(user),
+		User: CreateAuthResponse(user),
 	}
 }
 
@@ -141,7 +141,7 @@ func RegisterUser(c *gin.Context) {
 	fmt.Printf("Registered new user: %s.\n", user.Username)
 
 	// Success, registered and logged in
-	c.JSON(http.StatusAccepted, CreateUserResponseWithJWT(jwt, &user))
+	c.JSON(http.StatusAccepted, CreateAuthResponseWithJWT(jwt, &user))
 }
 
 /* -------------------------------------------------------------------------- */
@@ -187,7 +187,7 @@ func LoginUser(c *gin.Context) {
 	fmt.Printf("%s has logged in.\n", user.Username)
 
 	// Success, logged in
-	c.JSON(http.StatusAccepted, CreateUserResponseWithJWT(jwt, &user))
+	c.JSON(http.StatusAccepted, CreateAuthResponseWithJWT(jwt, &user))
 }
 
 /* -------------------------------------------------------------------------- */
@@ -205,7 +205,7 @@ func GetUser(c *gin.Context) {
 	fmt.Printf("Retrieved session for %s.\n", user.Username)
 
 	// Success, user found
-	c.JSON(http.StatusAccepted, CreateUserResponse(&user))
+	c.JSON(http.StatusAccepted, CreateAuthResponse(&user))
 }
 
 /* -------------------------------------------------------------------------- */

@@ -149,7 +149,7 @@ func GetPosts(c *gin.Context) {
 
 	// Filter database by UserID (if any)
 	if json.FilterUserID != 0 {
-		targetUser, found := FindUserFromID(json.FilterUserID, c)
+		targetUser, found := FindUserFromID(c, json.FilterUserID)
 		if found == false {
 			return
 		} else {
