@@ -11,7 +11,7 @@ func RegisterProtectedRoutes(r *gin.Engine) {
 	r.POST("auth/delete", controllers.DeleteUser)
 
 	// posts.go
-	r.GET("posts/get/:perPage/:pageNumber/:sortOption/:sortOrder/:filterTag", controllers.GetPosts)
+	r.GET("posts/get/:perPage/:pageNumber/:sortOption/:sortOrder/:filterUserId/:filterTag", controllers.GetPosts)
 	r.GET("posts/getbyid/:postId", controllers.GetPostByID)
 	r.POST("posts/create", controllers.CreatePost)
 	r.POST("posts/updatetext", controllers.UpdatePostText)

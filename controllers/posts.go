@@ -121,15 +121,14 @@ func GetPostsFromContext(dbContext *gorm.DB, perPage uint, pageNumber uint, sort
 	return posts, totalPostsCount
 }
 
-/* -------------------------------------------------------------------------- */
-/*    GetPosts | route: /posts/get/:perPage/:pageNumber/:sortBy/:filterTag    */
-/* -------------------------------------------------------------------------- */
+// GetPosts | route: /posts/get/:perPage/:pageNumber/:sortBy/:filterUserId/:filterTag
 type GetPostsRequest struct {
-	PerPage    uint   `uri:"perPage" binding:"required"`
-	PageNumber uint   `uri:"pageNumber" binding:"required"`
-	SortOption string `uri:"sortOption"`
-	SortOrder  string `uri:"sortOrder"`
-	FilterTag  string `uri:"filterTag"`
+	PerPage      uint   `uri:"perPage" binding:"required"`
+	PageNumber   uint   `uri:"pageNumber" binding:"required"`
+	SortOption   string `uri:"sortOption"`
+	SortOrder    string `uri:"sortOrder"`
+	FilterUserID uint   `uri:"filterUserId"`
+	FilterTag    string `uri:"filterTag"`
 }
 
 func GetPosts(c *gin.Context) {
@@ -147,6 +146,17 @@ func GetPosts(c *gin.Context) {
 	}
 
 	dbContext := database.DB.Table("posts")
+
+	// Filter database by UserID (if any)
+	if json.FilterUserID != 0 {
+		targetUser, found := FindUserFromID(json.FilterUserID, c)
+		if found == false {
+			return
+		} else {
+			dbContext = dbContext.Where("user_id = ?", targetUser.ID)
+		}
+	}
+
 	// Filter database by FilterTag (if any)
 	if verifyTag(json.FilterTag) {
 		dbContext = dbContext.Where("tag = ?", json.FilterTag)

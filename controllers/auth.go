@@ -15,6 +15,16 @@ import (
 /* -------------------------------------------------------------------------- */
 /*                              Helper functions                              */
 /* -------------------------------------------------------------------------- */
+func FindUserFromID(userID uint, c *gin.Context) (models.User, bool) {
+	var targetUser models.User
+	database.DB.First(&targetUser, userID)
+	if targetUser.ID == 0 {
+		c.JSON(http.StatusNoContent, gin.H{"message": "User not found."})
+		return targetUser, false
+	} else {
+		return targetUser, true
+	}
+}
 
 // Verify RequestUser using their JWT token
 func VerifyAuth(c *gin.Context) (user models.User, found bool) {
