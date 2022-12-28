@@ -35,7 +35,7 @@ func CreateCommentResponse(comment *models.Comment) CommentResponse {
 		Text:      comment.Text,
 		Author:    comment.Author,
 		UserID:    comment.UserID,
-		PostID:    comment.PostId,
+		PostID:    comment.PostID,
 		CreatedAt: comment.CreatedAt.Unix(),
 		UpdatedAt: comment.UpdatedAt.Unix(),
 	}
@@ -64,7 +64,7 @@ func CreateCommentsResponse(comments *[]models.Comment, totalCommentsCount int64
 /*   GetComments | route: comments/get/:postId/:perPage/:pageNumber/:sortBy   */
 /* -------------------------------------------------------------------------- */
 type GetCommentsRequest struct {
-	PostId     uint   `uri:"postId" binding:"required"`
+	PostID     uint   `uri:"postId" binding:"required"`
 	PerPage    uint   `uri:"perPage" binding:"required"`
 	PageNumber uint   `uri:"pageNumber" binding:"required"`
 	SortOption string `uri:"sortOption"`
@@ -85,9 +85,9 @@ func GetComments(c *gin.Context) {
 		return
 	}
 
-	// Find Post from PostId
+	// Find Post from PostID
 	var post models.Post
-	database.DB.First(&post, json.PostId)
+	database.DB.First(&post, json.PostID)
 	if post.ID == 0 {
 		c.JSON(http.StatusNoContent, gin.H{"message": "Post not found."})
 		return
@@ -98,7 +98,7 @@ func GetComments(c *gin.Context) {
 	offsetCommentCount := int64(json.PageNumber-1) * perPage
 
 	// Get all comments from Post
-	dbContext := database.DB.Table("comments").Where("post_id = ?", json.PostId)
+	dbContext := database.DB.Table("comments").Where("post_id = ?", json.PostID)
 
 	// Get total count for Comments
 	totalCommentsCount := int64(post.CommentsCount)
@@ -140,7 +140,7 @@ func GetComments(c *gin.Context) {
 /*                   CreateComment | route: comments/create                   */
 /* -------------------------------------------------------------------------- */
 type CreateCommentRequest struct {
-	PostId uint   `json:"postId" binding:"required"`
+	PostID uint   `json:"postId" binding:"required"`
 	Text   string `json:"text" binding:"required"`
 }
 
@@ -158,9 +158,9 @@ func CreateComment(c *gin.Context) {
 		return
 	}
 
-	// Find Post from PostId
+	// Find Post from PostID
 	var post models.Post
-	database.DB.First(&post, json.PostId)
+	database.DB.First(&post, json.PostID)
 	if post.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Post not found."})
 		return
@@ -222,7 +222,7 @@ func CreateComment(c *gin.Context) {
 /* -------------------------------------------------------------------------- */
 type UpdateCommentTextRequest struct {
 	Text      string `json:"text" binding:"required"`
-	CommentId uint   `json:"commentId" binding:"required"`
+	CommentID uint   `json:"commentId" binding:"required"`
 }
 
 func UpdateCommentText(c *gin.Context) {
@@ -239,9 +239,9 @@ func UpdateCommentText(c *gin.Context) {
 		return
 	}
 
-	// Find Comment from CommentId
+	// Find Comment from CommentID
 	var comment models.Comment
-	database.DB.First(&comment, json.CommentId)
+	database.DB.First(&comment, json.CommentID)
 	if comment.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Comment not found."})
 		return
@@ -277,7 +277,7 @@ func UpdateCommentText(c *gin.Context) {
 /*              DeleteComment | route: comments/delete/:commentId             */
 /* -------------------------------------------------------------------------- */
 type DeleteCommentRequest struct {
-	CommentId uint `uri:"commentId" binding:"required"`
+	CommentID uint `uri:"commentId" binding:"required"`
 }
 
 func DeleteComment(c *gin.Context) {
@@ -294,17 +294,17 @@ func DeleteComment(c *gin.Context) {
 		return
 	}
 
-	// Find Comment from CommentId
+	// Find Comment from CommentID
 	var comment models.Comment
-	database.DB.First(&comment, json.CommentId)
+	database.DB.First(&comment, json.CommentID)
 	if comment.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Comment not found."})
 		return
 	}
 
-	// Find Post from PostId
+	// Find Post from PostID
 	var post models.Post
-	database.DB.First(&post, comment.PostId)
+	database.DB.First(&post, comment.PostID)
 	if post.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Post not found."})
 		return

@@ -155,7 +155,7 @@ func GetPosts(c *gin.Context) {
 /*                GetPostByID | route : /posts/getbyid/:postId                */
 /* -------------------------------------------------------------------------- */
 type GetPostByIDRequest struct {
-	PostId uint `uri:"postId" binding:"required"`
+	PostID uint `uri:"postId" binding:"required"`
 }
 
 func GetPostByID(c *gin.Context) {
@@ -172,9 +172,9 @@ func GetPostByID(c *gin.Context) {
 		return
 	}
 
-	// Find Post from PostId
+	// Find Post from PostID
 	var post models.Post
-	database.DB.First(&post, json.PostId)
+	database.DB.First(&post, json.PostID)
 	if post.ID == 0 {
 		c.JSON(http.StatusNoContent, gin.H{"message": "Post not found."})
 		return
@@ -288,9 +288,9 @@ func UpdatePostText(c *gin.Context) {
 		return
 	}
 
-	// Find Post from PostId
+	// Find Post from PostID
 	var post models.Post
-	database.DB.First(&post, json.PostId)
+	database.DB.First(&post, json.PostID)
 	if post.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Post not found."})
 		return
@@ -318,7 +318,7 @@ func UpdatePostText(c *gin.Context) {
 /*                     DeletePost | route: /delete/:postId                    */
 /* -------------------------------------------------------------------------- */
 type DeletePostRequest struct {
-	PostId uint `uri:"postId" binding:"required"`
+	PostID uint `uri:"postId" binding:"required"`
 }
 
 func DeletePost(c *gin.Context) {
@@ -335,9 +335,9 @@ func DeletePost(c *gin.Context) {
 		return
 	}
 
-	// Find Post from PostId
+	// Find Post from PostID
 	var post models.Post
-	database.DB.First(&post, json.PostId)
+	database.DB.First(&post, json.PostID)
 	if post.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Post not found."})
 		return

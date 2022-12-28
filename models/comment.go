@@ -10,5 +10,5 @@ type Comment struct {
 	UserID uint
 
 	Post   Post `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	PostId uint
+	PostID uint
 }
