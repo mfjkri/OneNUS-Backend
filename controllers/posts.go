@@ -11,6 +11,7 @@ import (
 	"github.com/mfjkri/OneNUS-Backend/database"
 	"github.com/mfjkri/OneNUS-Backend/models"
 	"github.com/mfjkri/OneNUS-Backend/utils"
+	"gorm.io/gorm"
 )
 
 /* -------------------------------------------------------------------------- */
@@ -76,6 +77,50 @@ func CreatePostsResponse(posts *[]models.Post, totalPostsCount int64) GetPostsRe
 	}
 }
 
+// Fetches posts based on provided configuration
+func GetPostsFromContext(dbContext *gorm.DB, perPage uint, pageNumber uint, sortOption string, sortOrder string) ([]models.Post, int64) {
+	var posts []models.Post
+
+	// Limit PerPage to MAX_PER_PAGE
+	clampedPerPage := int64(math.Min(MAX_PER_PAGE, float64(perPage)))
+	offsetPostsCount := int64(pageNumber-1) * clampedPerPage
+
+	// Get total count for Posts
+	var totalPostsCount int64
+	dbContext.Count(&totalPostsCount)
+
+	// If we are request beyond the bounds of total count, error
+	if (offsetPostsCount < 0) || (offsetPostsCount > totalPostsCount) {
+		return posts, 0
+	}
+
+	// Sort Posts by sort option provided (defaults to byNew)
+	defaultSortOption := ByNew
+	if sortOption == "recent" {
+		defaultSortOption = ByRecent
+	} else if sortOption == "hot" {
+		defaultSortOption = ByHot
+	}
+
+	// Fetch Posts from [offsetCount, offsetCount + perPage]
+	// results order depends on SortOption and SortOrder
+	if sortOrder == "ascending" {
+		// Reverse page number based on totalPostsCount
+		leftOverRecords := math.Min(float64(perPage), float64(totalPostsCount-offsetPostsCount))
+		offsetPostsCount = totalPostsCount - offsetPostsCount - clampedPerPage
+		dbContext.Limit(int(leftOverRecords)).Order(defaultSortOption).Offset(int(offsetPostsCount)).Find(&posts)
+
+		// Reverse the page results for descending order
+		for i, j := 0, len(posts)-1; i < j; i, j = i+1, j-1 {
+			posts[i], posts[j] = posts[j], posts[i]
+		}
+	} else {
+		dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetPostsCount)).Find(&posts)
+	}
+
+	return posts, totalPostsCount
+}
+
 /* -------------------------------------------------------------------------- */
 /*    GetPosts | route: /posts/get/:perPage/:pageNumber/:sortBy/:filterTag    */
 /* -------------------------------------------------------------------------- */
@@ -101,51 +146,14 @@ func GetPosts(c *gin.Context) {
 		return
 	}
 
-	// Limit PerPage to 10
-	perPage := int64(math.Min(MAX_PER_PAGE, float64(json.PerPage)))
-	offsetPostCount := int64(json.PageNumber-1) * perPage
-
 	dbContext := database.DB.Table("posts")
-
 	// Filter database by FilterTag (if any)
 	if verifyTag(json.FilterTag) {
 		dbContext = dbContext.Where("tag = ?", json.FilterTag)
 	}
 
-	// Get total count for Posts
-	var totalPostsCount int64
-	dbContext.Count(&totalPostsCount)
-
-	// If we are request beyond the bounds of total count, error
-	if (offsetPostCount < 0) || (offsetPostCount > totalPostsCount) {
-		c.JSON(http.StatusNoContent, gin.H{"message": "No more posts found."})
-		return
-	}
-
-	// Sort Posts by sort option provided (defaults to byNew)
-	defaultSortOption := ByNew
-	if json.SortOption == "recent" {
-		defaultSortOption = ByRecent
-	} else if json.SortOption == "hot" {
-		defaultSortOption = ByHot
-	}
-
-	// Fetch Posts from [offsetCount, offsetCount + perPage]
-	// results order depends on SortOption and SortOrder
-	var posts []models.Post
-	if json.SortOrder == "ascending" {
-		// Reverse page number based on totalPostsCount
-		leftOverRecords := math.Min(float64(perPage), float64(totalPostsCount-offsetPostCount))
-		offsetPostCount = totalPostsCount - offsetPostCount - perPage
-		dbContext.Limit(int(leftOverRecords)).Order(defaultSortOption).Offset(int(offsetPostCount)).Find(&posts)
-
-		// Reverse the page results for descending order
-		for i, j := 0, len(posts)-1; i < j; i, j = i+1, j-1 {
-			posts[i], posts[j] = posts[j], posts[i]
-		}
-	} else {
-		dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetPostCount)).Find(&posts)
-	}
+	// Fetch posts
+	posts, totalPostsCount := GetPostsFromContext(dbContext, json.PerPage, json.PageNumber, json.SortOption, json.SortOrder)
 
 	// Return fetched posts
 	c.JSON(http.StatusAccepted, CreatePostsResponse(&posts, totalPostsCount))

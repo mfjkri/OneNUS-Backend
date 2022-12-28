@@ -11,6 +11,7 @@ import (
 	"github.com/mfjkri/OneNUS-Backend/database"
 	"github.com/mfjkri/OneNUS-Backend/models"
 	"github.com/mfjkri/OneNUS-Backend/utils"
+	"gorm.io/gorm"
 )
 
 /* -------------------------------------------------------------------------- */
@@ -60,6 +61,48 @@ func CreateCommentsResponse(comments *[]models.Comment, totalCommentsCount int64
 	}
 }
 
+// Fetches comments based on provided configuration
+func GetCommentsFromContext(dbContext *gorm.DB, perPage uint, pageNumber uint, sortOption string, sortOrder string) ([]models.Comment, int64) {
+	var comments []models.Comment
+
+	// Limit PerPage to MAX_PER_PAGE
+	clampedPerPage := int64(math.Min(MAX_PER_PAGE, float64(perPage)))
+	offsetCommentsCount := int64(pageNumber-1) * clampedPerPage
+
+	// Get total count for Comments
+	var totalCommentsCount int64
+	dbContext.Count(&totalCommentsCount)
+
+	// If we are request beyond the bounds of total count, error
+	if (offsetCommentsCount < 0) || (offsetCommentsCount > totalCommentsCount) {
+		return comments, 0
+	}
+
+	// Sort Comments by sort option provided (defaults to byNew)
+	defaultSortOption := ByNew
+	if sortOption == "recent" {
+		defaultSortOption = ByRecent
+	}
+
+	// Fetch Comments from [offsetCount, offsetCount + perPage]
+	// results order depends on SortOption and SortOrder
+	if sortOrder == "ascending" {
+		// Reverse page number based on totalPostsCount
+		leftOverRecords := math.Min(float64(perPage), float64(totalCommentsCount-offsetCommentsCount))
+		offsetCommentsCount = totalCommentsCount - offsetCommentsCount - clampedPerPage
+		dbContext.Limit(int(leftOverRecords)).Order(defaultSortOption).Offset(int(offsetCommentsCount)).Find(&comments)
+
+		// Reverse the page results for descending order
+		for i, j := 0, len(comments)-1; i < j; i, j = i+1, j-1 {
+			comments[i], comments[j] = comments[j], comments[i]
+		}
+	} else {
+		dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetCommentsCount)).Find(&comments)
+	}
+
+	return comments, totalCommentsCount
+}
+
 /* -------------------------------------------------------------------------- */
 /*   GetComments | route: comments/get/:postId/:perPage/:pageNumber/:sortBy   */
 /* -------------------------------------------------------------------------- */
@@ -93,44 +136,9 @@ func GetComments(c *gin.Context) {
 		return
 	}
 
-	// Limit PerPage to MAX_PER_PAGE
-	perPage := int64(math.Min(MAX_PER_PAGE, float64(json.PerPage)))
-	offsetCommentCount := int64(json.PageNumber-1) * perPage
-
 	// Get all comments from Post
 	dbContext := database.DB.Table("comments").Where("post_id = ?", json.PostID)
-
-	// Get total count for Comments
-	totalCommentsCount := int64(post.CommentsCount)
-
-	// If we are request beyond the bounds of total count, error
-	if (offsetCommentCount < 0) || (offsetCommentCount > totalCommentsCount) {
-		c.JSON(http.StatusNoContent, gin.H{"message": "No more comments found."})
-		return
-	}
-
-	// Sort Comments by sort option provided (defaults to byNew)
-	defaultSortOption := ByNew
-	if json.SortOption == "recent" {
-		defaultSortOption = ByRecent
-	}
-
-	// Fetch Comments from [offsetCount, offsetCount + perPage]
-	// results order depends on SortOption and SortOrder
-	var comments []models.Comment
-	if json.SortOrder == "ascending" {
-		// Reverse page number based on totalCommentsCount
-		leftOverRecords := math.Min(float64(perPage), float64(totalCommentsCount-offsetCommentCount))
-		offsetCommentCount = totalCommentsCount - offsetCommentCount - perPage
-		dbContext.Limit(int(leftOverRecords)).Order(defaultSortOption).Offset(int(offsetCommentCount)).Find(&comments)
-
-		// Reverse the page results for descending order
-		for i, j := 0, len(comments)-1; i < j; i, j = i+1, j-1 {
-			comments[i], comments[j] = comments[j], comments[i]
-		}
-	} else {
-		dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetCommentCount)).Find(&comments)
-	}
+	comments, totalCommentsCount := GetCommentsFromContext(dbContext, json.PerPage, json.PageNumber, json.SortOption, json.SortOrder)
 
 	// Return fetched comments
 	c.JSON(http.StatusAccepted, CreateCommentsResponse(&comments, totalCommentsCount))
