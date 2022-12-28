@@ -13,6 +13,14 @@ func UpdateUsers() {
 	database.DB.Find(&users)
 
 	for _, user := range users {
+		var totalPostsCount int64
+		database.DB.Table("posts").Where("user_id = ?", user.ID).Count(&totalPostsCount)
+		user.PostsCount = uint(totalPostsCount)
+
+		var totalCommentsCount int64
+		database.DB.Table("comments").Where("user_id = ?", user.ID).Count(&totalCommentsCount)
+		user.CommentsCount = uint(totalCommentsCount)
+
 		if user.Username != "admin" {
 			user.Role = "member"
 		} else {

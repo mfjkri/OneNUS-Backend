@@ -267,7 +267,8 @@ func CreatePost(c *gin.Context) {
 
 	// Successfully created a new Post
 
-	// Update LastPostAt for User
+	// Update PostsCount and LastPostAt for User
+	user.PostsCount += 1
 	user.LastPostAt = timeNow
 	database.DB.Save(&user)
 
@@ -368,6 +369,10 @@ func DeletePost(c *gin.Context) {
 	}
 
 	database.DB.Delete(&post)
+
+	// Update PostsCount for User
+	user.PostsCount -= 1
+	database.DB.Save(&user)
 
 	fmt.Printf("%s has deleted a post.\n\tPost title: %s\n", user.Username, post.Title)
 

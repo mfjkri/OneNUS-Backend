@@ -205,7 +205,8 @@ func CreateComment(c *gin.Context) {
 
 	// Successfully created a new Post
 
-	// Update LastCommentAt for User
+	// Update CommentsCount and LastCommentAt for User
+	user.CommentsCount += 1
 	user.LastCommentAt = timeNow
 	database.DB.Save(&user)
 
@@ -326,6 +327,10 @@ func DeleteComment(c *gin.Context) {
 
 	// Delete Comment
 	database.DB.Delete(&comment)
+
+	// Update CommentsCount for User
+	user.CommentsCount -= 1
+	database.DB.Save(&user)
 
 	// Update Post metadata
 	var lastComment models.Comment
