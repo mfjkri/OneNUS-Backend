@@ -60,20 +60,16 @@ func VerifyAuth(c *gin.Context) (user models.User, found bool) {
 
 // Convert a User Model into a JSON format
 type UserResponse struct {
-	ID            uint   `json:"id" binding:"required"`
-	Username      string `json:"username" binding:"required"`
-	Role          string `json:"role" binding:"required"`
-	PostsCount    uint   `json:"postsCount" binding:"required"`
-	CommentsCount uint   `json:"commentsCount" binding:"required"`
+	ID       uint   `json:"id" binding:"required"`
+	Username string `json:"username" binding:"required"`
+	Role     string `json:"role" binding:"required"`
 }
 
 func CreateUserResponse(user *models.User) UserResponse {
 	return UserResponse{
-		ID:            user.ID,
-		Username:      user.Username,
-		Role:          user.Role,
-		PostsCount:    user.PostsCount,
-		CommentsCount: user.CommentsCount,
+		ID:       user.ID,
+		Username: user.Username,
+		Role:     user.Role,
 	}
 }
 
