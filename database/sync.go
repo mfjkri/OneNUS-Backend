@@ -9,5 +9,5 @@ import (
 func Migrate() {
 	DB.AutoMigrate(&models.User{}, &models.Post{}, &models.Comment{})
 
-	fmt.Println("Sucessfully migrated database...")
+	fmt.Println("Successfully migrated database...")
 }

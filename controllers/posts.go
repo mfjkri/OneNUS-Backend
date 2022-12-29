@@ -121,7 +121,10 @@ func GetPostsFromContext(dbContext *gorm.DB, perPage uint, pageNumber uint, sort
 	return posts, totalPostsCount
 }
 
-// GetPosts | route: /posts/get/:perPage/:pageNumber/:sortBy/:filterUserId/:filterTag
+/* -------------------------------------------------------------------------- */
+/*                            GetPosts | route: ...                           */
+/* -------------------------------------------------------------------------- */
+// route: /posts/get/:perPage/:pageNumber/:sortBy/:filterUserId/:filterTag
 type GetPostsRequest struct {
 	PerPage      uint   `uri:"perPage" binding:"required"`
 	PageNumber   uint   `uri:"pageNumber" binding:"required"`

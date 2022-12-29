@@ -104,8 +104,9 @@ func GetCommentsFromContext(dbContext *gorm.DB, perPage uint, pageNumber uint, s
 }
 
 /* -------------------------------------------------------------------------- */
-/*   GetComments | route: comments/get/:postId/:perPage/:pageNumber/:sortBy   */
+/*                          GetComments | route: ...                          */
 /* -------------------------------------------------------------------------- */
+// route: /comments/get/:postId/:perPage/:pageNumber/:sortOption/:sortOrder
 type GetCommentsRequest struct {
 	PostID     uint   `uri:"postId" binding:"required"`
 	PerPage    uint   `uri:"perPage" binding:"required"`
