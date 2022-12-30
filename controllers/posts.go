@@ -374,8 +374,8 @@ func DeletePost(c *gin.Context) {
 	database.DB.Delete(&post)
 
 	// Update PostsCount for User
-	user.PostsCount -= 1
-	database.DB.Save(&user)
+	// user.PostsCount -= 1
+	// database.DB.Save(&user)
 
 	fmt.Printf("%s has deleted a post.\n\tPost title: %s\n", user.Username, post.Title)
 

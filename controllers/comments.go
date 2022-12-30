@@ -5,7 +5,6 @@ import (
 	"math"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/OneNUS-Backend/database"
@@ -312,14 +311,6 @@ func DeleteComment(c *gin.Context) {
 		return
 	}
 
-	// Find Post from PostID
-	var post models.Post
-	database.DB.First(&post, comment.PostID)
-	if post.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Post not found."})
-		return
-	}
-
 	// Check User is the author or is admin
 	if (comment.UserID != user.ID) && (user.Role != ADMIN) {
 		c.JSON(http.StatusForbidden, gin.H{"message": "You do not have valid permissions."})
@@ -329,27 +320,7 @@ func DeleteComment(c *gin.Context) {
 	// Delete Comment
 	database.DB.Delete(&comment)
 
-	// Update CommentsCount for User
-	user.CommentsCount -= 1
-	database.DB.Save(&user)
-
-	// Update Post metadata
-	var lastComment models.Comment
-	postUpdatedAt := post.UpdatedAt
-	database.DB.Table("comments").Where("post_id = ?", post.ID).Order("created_at DESC, id DESC").First(&lastComment)
-	if lastComment.ID != 0 {
-		post.CommentedAt = lastComment.CreatedAt
-	} else {
-		post.CommentedAt = time.Unix(0, 0)
-	}
-	post.CommentsCount -= 1
-	database.DB.Save(&post)
-
-	// By default post.UpdatedAt will get updated by these changes but we don't want that.
-	// UpdatedAt should only reflect changes to post.Text
-	database.DB.Model(&post).Update("updated_at", postUpdatedAt)
-
-	fmt.Printf("%s has deleted a comment.\n\tPost title: %s\n\tComment text: %s\n", user.Username, post.Title, comment.Text)
+	fmt.Printf("%s has deleted a comment.\n\tComment text: %s\n", user.Username, comment.Text)
 
 	// Return deleted Comment data
 	c.JSON(http.StatusAccepted, CreateCommentResponse(&comment))

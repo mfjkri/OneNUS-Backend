@@ -112,6 +112,14 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 
+	// Delete all of users Comments (to update existing posts commentsCount correctly)
+	// Deletion of user Posts will be handled by CascadeDelete
+	var comments []models.Comment
+	database.DB.Table("comments").Where("user_id = ?", user.ID).Find(&comments)
+	for _, comment := range comments {
+		database.DB.Delete(&comment)
+	}
+
 	// Delete the RequestUser from database
 	database.DB.Delete(&user)
 

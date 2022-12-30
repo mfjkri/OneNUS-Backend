@@ -25,5 +25,5 @@ func RegisterProtectedRoutes(r *gin.Engine) {
 	// users.go
 	r.GET("users/getbyid/:userId", controllers.GetUserFromID)
 	r.POST("users/updatebio", controllers.UpdateBio)
-	r.POST("users/delete", controllers.DeleteUser)
+	r.DELETE("users/delete", controllers.DeleteUser)
 }
