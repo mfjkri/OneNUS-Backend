@@ -14,6 +14,8 @@ var USER_POST_COOLDOWN = time.Second * 45
 var MAX_COMMENT_TEXT_CHAR = 1000
 var USER_COMMENT_COOLDOWN = time.Second * 20
 
+var MAX_USER_BIO_LENGTH = 100
+
 /* -------------------------------------------------------------------------- */
 /*                                 USER ROLES                                 */
 /* -------------------------------------------------------------------------- */

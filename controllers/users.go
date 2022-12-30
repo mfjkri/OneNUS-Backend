@@ -2,9 +2,12 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mfjkri/OneNUS-Backend/database"
 	"github.com/mfjkri/OneNUS-Backend/models"
+	"github.com/mfjkri/OneNUS-Backend/utils"
 )
 
 type UserResponse struct {
@@ -57,5 +60,39 @@ func GetUserFromID(c *gin.Context) {
 	}
 
 	// Return fetch User
+	c.JSON(http.StatusAccepted, CreateUserResponse(&user))
+}
+
+/* -------------------------------------------------------------------------- */
+/*                     UpdateBio | route: /users/updatebio                    */
+/* -------------------------------------------------------------------------- */
+type UpdateBioRequest struct {
+	Bio string `json:"bio" binding:"required"`
+}
+
+func UpdateBio(c *gin.Context) {
+	// Check that RequestUser is authenticated
+	user, found := VerifyAuth(c)
+	if found == false {
+		return
+	}
+
+	// Parse RequestBody
+	var json UpdateBioRequest
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	// Check that new bio does not contain illegal characters
+	if !utils.ContainsValidCharactersOnly(json.Bio) {
+		c.JSON(http.StatusForbidden, gin.H{"message": "Bio contains illegal characters."})
+		return
+	}
+
+	// Update Bio and save
+	user.Bio = utils.TrimString(strings.TrimSpace(json.Bio), MAX_USER_BIO_LENGTH)
+	database.DB.Save(&user)
+
 	c.JSON(http.StatusAccepted, CreateUserResponse(&user))
 }
