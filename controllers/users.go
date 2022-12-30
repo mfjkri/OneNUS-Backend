@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -41,7 +42,7 @@ type GetUserFromIDRequest struct {
 
 func GetUserFromID(c *gin.Context) {
 	// Check that RequestUser is authenticated
-	_, found := VerifyAuth(c)
+	user, found := VerifyAuth(c)
 	if found == false {
 		return
 	}
@@ -53,14 +54,16 @@ func GetUserFromID(c *gin.Context) {
 		return
 	}
 
-	user, found := FindUserFromID(c, json.UserID)
+	targetUser, found := FindUserFromID(c, json.UserID)
 
 	if found == false {
 		return
 	}
 
+	fmt.Printf("%s has requested for: %s\n", user.Username, targetUser.Username)
+
 	// Return fetch User
-	c.JSON(http.StatusAccepted, CreateUserResponse(&user))
+	c.JSON(http.StatusAccepted, CreateUserResponse(&targetUser))
 }
 
 /* -------------------------------------------------------------------------- */
@@ -94,5 +97,26 @@ func UpdateBio(c *gin.Context) {
 	user.Bio = utils.TrimString(strings.TrimSpace(json.Bio), MAX_USER_BIO_LENGTH)
 	database.DB.Save(&user)
 
+	fmt.Printf("Updated %s`s bio.\n\tBio: %s\n", user.Username, user.Bio)
+
+	c.JSON(http.StatusAccepted, CreateUserResponse(&user))
+}
+
+/* -------------------------------------------------------------------------- */
+/*                     DeleteUser | route : /users/delete                     */
+/* -------------------------------------------------------------------------- */
+func DeleteUser(c *gin.Context) {
+	// Check that RequestUser is authenticated
+	user, found := VerifyAuth(c)
+	if found == false {
+		return
+	}
+
+	// Delete the RequestUser from database
+	database.DB.Delete(&user)
+
+	fmt.Printf("Deleted user: %s.\n", user.Username)
+
+	// Success, user deleted
 	c.JSON(http.StatusAccepted, CreateUserResponse(&user))
 }

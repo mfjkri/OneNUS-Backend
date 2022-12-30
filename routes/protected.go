@@ -8,7 +8,6 @@ import (
 func RegisterProtectedRoutes(r *gin.Engine) {
 	// auth.go
 	r.GET("auth/me", controllers.GetUser)
-	r.POST("auth/delete", controllers.DeleteUser)
 
 	// posts.go
 	r.GET("posts/get/:perPage/:pageNumber/:sortOption/:sortOrder/:filterUserId/:filterTag", controllers.GetPosts)
@@ -26,4 +25,5 @@ func RegisterProtectedRoutes(r *gin.Engine) {
 	// users.go
 	r.GET("users/getbyid/:userId", controllers.GetUserFromID)
 	r.POST("users/updatebio", controllers.UpdateBio)
+	r.POST("users/delete", controllers.DeleteUser)
 }

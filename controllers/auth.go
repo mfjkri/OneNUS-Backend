@@ -87,8 +87,6 @@ func CreateAuthResponseWithJWT(jwt string, user *models.User) AuthResponseWithJW
 }
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
 /*                    RegisterUser | route: /auth/register                    */
 /* -------------------------------------------------------------------------- */
 type RegisterRequest struct {
@@ -145,8 +143,6 @@ func RegisterUser(c *gin.Context) {
 }
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
 /*                       LoginUser | route: /auth/login                       */
 /* -------------------------------------------------------------------------- */
 type LoginRequest struct {
@@ -191,8 +187,6 @@ func LoginUser(c *gin.Context) {
 }
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
 /*                          GetUser | route: /auth/me                         */
 /* -------------------------------------------------------------------------- */
 func GetUser(c *gin.Context) {
@@ -207,27 +201,3 @@ func GetUser(c *gin.Context) {
 	// Success, user found
 	c.JSON(http.StatusAccepted, CreateAuthResponse(&user))
 }
-
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-/*                      DeleteUser | route : /auth/delete                     */
-/* -------------------------------------------------------------------------- */
-func DeleteUser(c *gin.Context) {
-	// Check that RequestUser is authenticated
-	user, found := VerifyAuth(c)
-	if found == false {
-		return
-	}
-
-	database.DB.Delete(&user)
-
-	fmt.Printf("Deleted user: %s.\n", user.Username)
-
-	// Success, user deleted
-	c.JSON(http.StatusAccepted, gin.H{
-		"username": user.Username,
-	})
-}
-
-/* -------------------------------------------------------------------------- */
