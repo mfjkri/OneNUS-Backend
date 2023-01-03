@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/OneNUS-Backend/database"
@@ -19,7 +20,7 @@ func FindUserFromID(c *gin.Context, userID uint) (models.User, bool) {
 	var targetUser models.User
 	database.DB.First(&targetUser, userID)
 	if targetUser.ID == 0 {
-		c.JSON(http.StatusNoContent, gin.H{"message": "User not found."})
+		c.JSON(http.StatusForbidden, gin.H{"message": "User not found."})
 		return targetUser, false
 	} else {
 		return targetUser, true
@@ -117,7 +118,16 @@ func RegisterUser(c *gin.Context) {
 
 	username_lowered := strings.ToLower(json.Username)
 
-	user := models.User{Username: username_lowered, Password: hash, Role: "member"}
+	user := models.User{
+		Username: username_lowered,
+		Password: hash,
+		Role:     "member",
+		Bio:      "User has not set their bio.",
+		Private:  false,
+
+		LastPostAt:    time.Unix(0, 0),
+		LastCommentAt: time.Unix(0, 0),
+	}
 	if user.Username == "admin" {
 		user.Role = "admin"
 	}

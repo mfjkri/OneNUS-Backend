@@ -87,7 +87,7 @@ func GetCommentsFromContext(dbContext *gorm.DB, perPage uint, pageNumber uint, s
 	// results order depends on SortOption and SortOrder
 	if sortOrder == "ascending" {
 		// Reverse page number based on totalPostsCount
-		leftOverRecords := math.Min(float64(perPage), float64(totalCommentsCount-offsetCommentsCount))
+		leftOverRecords := math.Min(float64(clampedPerPage), float64(totalCommentsCount-offsetCommentsCount))
 		offsetCommentsCount = totalCommentsCount - offsetCommentsCount - clampedPerPage
 		dbContext.Limit(int(leftOverRecords)).Order(defaultSortOption).Offset(int(offsetCommentsCount)).Find(&comments)
 
@@ -96,7 +96,7 @@ func GetCommentsFromContext(dbContext *gorm.DB, perPage uint, pageNumber uint, s
 			comments[i], comments[j] = comments[j], comments[i]
 		}
 	} else {
-		dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetCommentsCount)).Find(&comments)
+		dbContext.Limit(int(clampedPerPage)).Order(defaultSortOption).Offset(int(offsetCommentsCount)).Find(&comments)
 	}
 
 	return comments, totalCommentsCount
@@ -132,7 +132,7 @@ func GetComments(c *gin.Context) {
 	var post models.Post
 	database.DB.First(&post, json.PostID)
 	if post.ID == 0 {
-		c.JSON(http.StatusNoContent, gin.H{"message": "Post not found."})
+		c.JSON(http.StatusForbidden, gin.H{"message": "Post not found."})
 		return
 	}
 

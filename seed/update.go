@@ -2,6 +2,7 @@ package seed
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/mfjkri/OneNUS-Backend/database"
 	"github.com/mfjkri/OneNUS-Backend/models"
@@ -49,6 +50,8 @@ func UpdatePosts() {
 		dbContext.Order("created_at DESC, id DESC").First(&lastComment)
 		if lastComment.ID != 0 {
 			post.CommentedAt = lastComment.CreatedAt
+		} else {
+			post.CommentedAt = time.Unix(0, 0)
 		}
 
 		postUpdatedAt := post.UpdatedAt

@@ -20,7 +20,7 @@ Each of them also inherit from the [base model](../models/base.go) which contain
 
 <br/>
 
-# 🛣️ API Routes
+# 🛣️ API Endpoints
 
 API routing is split into 2 access-level categories:
 
@@ -33,7 +33,7 @@ API routing is split into 2 access-level categories:
    - Requires user authentication for access (JWT token)
    - Routes in this category are defined in [protected.go](../routes/protected.go)
 
-There are 4 main paths with differing access-levels:
+Below is a quick reference to all API endpoints defined:
 
 - `auth`:
 
@@ -69,7 +69,9 @@ There are 4 main paths with differing access-levels:
 
   ```py
   users (protected)
-  └── getbyid      # Fetches user details based on ID (if any)
+  ├── getbyid     # Fetches user details based on ID (if any)
+  ├── updatebio   # Update user bio
+  └── delete      # Deletes user account
   ```
 
 <br/>

@@ -106,7 +106,7 @@ func GetPostsFromContext(dbContext *gorm.DB, perPage uint, pageNumber uint, sort
 	// results order depends on SortOption and SortOrder
 	if sortOrder == "ascending" {
 		// Reverse page number based on totalPostsCount
-		leftOverRecords := math.Min(float64(perPage), float64(totalPostsCount-offsetPostsCount))
+		leftOverRecords := math.Min(float64(clampedPerPage), float64(totalPostsCount-offsetPostsCount))
 		offsetPostsCount = totalPostsCount - offsetPostsCount - clampedPerPage
 		dbContext.Limit(int(leftOverRecords)).Order(defaultSortOption).Offset(int(offsetPostsCount)).Find(&posts)
 
@@ -115,7 +115,7 @@ func GetPostsFromContext(dbContext *gorm.DB, perPage uint, pageNumber uint, sort
 			posts[i], posts[j] = posts[j], posts[i]
 		}
 	} else {
-		dbContext.Limit(int(perPage)).Order(defaultSortOption).Offset(int(offsetPostsCount)).Find(&posts)
+		dbContext.Limit(int(clampedPerPage)).Order(defaultSortOption).Offset(int(offsetPostsCount)).Find(&posts)
 	}
 
 	return posts, totalPostsCount
@@ -197,7 +197,7 @@ func GetPostByID(c *gin.Context) {
 	var post models.Post
 	database.DB.First(&post, json.PostID)
 	if post.ID == 0 {
-		c.JSON(http.StatusNoContent, gin.H{"message": "Post not found."})
+		c.JSON(http.StatusNotFound, gin.H{"message": "Post not found."})
 		return
 	}
 
