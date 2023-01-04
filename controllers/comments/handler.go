@@ -1,106 +1,17 @@
-package controllers
+package comments
 
 import (
 	"fmt"
-	"math"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mfjkri/OneNUS-Backend/config"
+	"github.com/mfjkri/OneNUS-Backend/controllers/auth"
 	"github.com/mfjkri/OneNUS-Backend/database"
 	"github.com/mfjkri/OneNUS-Backend/models"
 	"github.com/mfjkri/OneNUS-Backend/utils"
-	"gorm.io/gorm"
 )
-
-/* -------------------------------------------------------------------------- */
-/*                              Helper functions                              */
-/* -------------------------------------------------------------------------- */
-type CommentResponse struct {
-	ID     uint   `json:"id" binding:"required"`
-	Text   string `json:"text" binding:"required"`
-	Author string `json:"author" binding:"required"`
-	UserID uint   `json:"userId" binding:"required"`
-
-	PostID uint `json:"postId" binding:"required"`
-
-	CreatedAt int64 `json:"createdAt" binding:"required"`
-	UpdatedAt int64 `json:"updatedAt" binding:"required"`
-}
-
-// Convert a Comment Model into a JSON format
-func CreateCommentResponse(comment *models.Comment) CommentResponse {
-	return CommentResponse{
-		ID:        comment.ID,
-		Text:      comment.Text,
-		Author:    comment.Author,
-		UserID:    comment.UserID,
-		PostID:    comment.PostID,
-		CreatedAt: comment.CreatedAt.Unix(),
-		UpdatedAt: comment.UpdatedAt.Unix(),
-	}
-}
-
-type GetCommentsResponse struct {
-	Comments      []CommentResponse `json:"comments" binding:"required"`
-	CommentsCount int64             `json:"commentsCount" binding:"required"`
-}
-
-// Bundles and convert multiple comments models into a JSON format
-func CreateCommentsResponse(comments *[]models.Comment, totalCommentsCount int64) GetCommentsResponse {
-	var commentsResponse []CommentResponse
-	for _, comment := range *comments {
-		commentResponse := CreateCommentResponse(&comment)
-		commentsResponse = append(commentsResponse, commentResponse)
-	}
-
-	return GetCommentsResponse{
-		Comments:      commentsResponse,
-		CommentsCount: totalCommentsCount,
-	}
-}
-
-// Fetches comments based on provided configuration
-func GetCommentsFromContext(dbContext *gorm.DB, perPage uint, pageNumber uint, sortOption string, sortOrder string) ([]models.Comment, int64) {
-	var comments []models.Comment
-
-	// Limit PerPage to MAX_PER_PAGE
-	clampedPerPage := int64(math.Min(MAX_PER_PAGE, float64(perPage)))
-	offsetCommentsCount := int64(pageNumber-1) * clampedPerPage
-
-	// Get total count for Comments
-	var totalCommentsCount int64
-	dbContext.Count(&totalCommentsCount)
-
-	// If we are request beyond the bounds of total count, error
-	if (offsetCommentsCount < 0) || (offsetCommentsCount > totalCommentsCount) {
-		return comments, 0
-	}
-
-	// Sort Comments by sort option provided (defaults to byNew)
-	defaultSortOption := ByNew
-	if sortOption == "recent" {
-		defaultSortOption = ByRecent
-	}
-
-	// Fetch Comments from [offsetCount, offsetCount + perPage]
-	// results order depends on SortOption and SortOrder
-	if sortOrder == "ascending" {
-		// Reverse page number based on totalPostsCount
-		leftOverRecords := math.Min(float64(clampedPerPage), float64(totalCommentsCount-offsetCommentsCount))
-		offsetCommentsCount = totalCommentsCount - offsetCommentsCount - clampedPerPage
-		dbContext.Limit(int(leftOverRecords)).Order(defaultSortOption).Offset(int(offsetCommentsCount)).Find(&comments)
-
-		// Reverse the page results for descending order
-		for i, j := 0, len(comments)-1; i < j; i, j = i+1, j-1 {
-			comments[i], comments[j] = comments[j], comments[i]
-		}
-	} else {
-		dbContext.Limit(int(clampedPerPage)).Order(defaultSortOption).Offset(int(offsetCommentsCount)).Find(&comments)
-	}
-
-	return comments, totalCommentsCount
-}
 
 /* -------------------------------------------------------------------------- */
 /*                          GetComments | route: ...                          */
@@ -116,7 +27,7 @@ type GetCommentsRequest struct {
 
 func GetComments(c *gin.Context) {
 	// Check that RequestUser is authenticated
-	_, found := VerifyAuth(c)
+	_, found := auth.VerifyAuth(c)
 	if found == false {
 		return
 	}
@@ -154,7 +65,7 @@ type CreateCommentRequest struct {
 
 func CreateComment(c *gin.Context) {
 	// Check that RequestUser is authenticated
-	user, found := VerifyAuth(c)
+	user, found := auth.VerifyAuth(c)
 	if found == false {
 		return
 	}
@@ -175,9 +86,9 @@ func CreateComment(c *gin.Context) {
 	}
 
 	// Prevent frequent CreatePosts by User
-	timeNow, canCreateComment := utils.CheckTimeIsAfter(user.LastCommentAt, USER_COMMENT_COOLDOWN)
+	timeNow, canCreateComment := utils.CheckTimeIsAfter(user.LastCommentAt, config.USER_COMMENT_COOLDOWN)
 	if canCreateComment == false {
-		cdLeft := utils.GetCooldownLeft(user.LastCommentAt, USER_COMMENT_COOLDOWN, timeNow)
+		cdLeft := utils.GetCooldownLeft(user.LastCommentAt, config.USER_COMMENT_COOLDOWN, timeNow)
 		c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("Creating comments too frequently. Please try again in %ds", int(cdLeft.Seconds()))})
 		return
 	}
@@ -190,7 +101,7 @@ func CreateComment(c *gin.Context) {
 
 	// Try to create new Comment
 	comment := models.Comment{
-		Text:   utils.TrimString(strings.TrimSpace(json.Text), MAX_COMMENT_TEXT_CHAR),
+		Text:   utils.TrimString(strings.TrimSpace(json.Text), config.MAX_COMMENT_TEXT_CHAR),
 		Author: user.Username,
 		User:   user,
 		Post:   post,
@@ -236,7 +147,7 @@ type UpdateCommentTextRequest struct {
 
 func UpdateCommentText(c *gin.Context) {
 	// Check that RequestUser is authenticated
-	user, found := VerifyAuth(c)
+	user, found := auth.VerifyAuth(c)
 	if found == false {
 		return
 	}
@@ -257,9 +168,9 @@ func UpdateCommentText(c *gin.Context) {
 	}
 
 	// Prevent frequent UpdateCommentText by User
-	timeNow, canUpdateComment := utils.CheckTimeIsAfter(user.LastCommentAt, USER_COMMENT_COOLDOWN)
+	timeNow, canUpdateComment := utils.CheckTimeIsAfter(user.LastCommentAt, config.USER_COMMENT_COOLDOWN)
 	if canUpdateComment == false {
-		cdLeft := utils.GetCooldownLeft(user.LastCommentAt, USER_COMMENT_COOLDOWN, timeNow)
+		cdLeft := utils.GetCooldownLeft(user.LastCommentAt, config.USER_COMMENT_COOLDOWN, timeNow)
 		c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("Updating comments too frequently. Please try again in %ds", int(cdLeft.Seconds()))})
 		return
 	}
@@ -271,7 +182,7 @@ func UpdateCommentText(c *gin.Context) {
 	}
 
 	// Replace Comment text and update User LastCommentAt
-	comment.Text = utils.TrimString(strings.TrimSpace(json.Text), MAX_COMMENT_TEXT_CHAR)
+	comment.Text = utils.TrimString(strings.TrimSpace(json.Text), config.MAX_COMMENT_TEXT_CHAR)
 	user.LastCommentAt = timeNow
 	database.DB.Save(&comment)
 	database.DB.Save(&user)
@@ -291,7 +202,7 @@ type DeleteCommentRequest struct {
 
 func DeleteComment(c *gin.Context) {
 	// Check that RequestUser is authenticated
-	user, found := VerifyAuth(c)
+	user, found := auth.VerifyAuth(c)
 	if found == false {
 		return
 	}
@@ -312,7 +223,7 @@ func DeleteComment(c *gin.Context) {
 	}
 
 	// Check User is the author or is admin
-	if (comment.UserID != user.ID) && (user.Role != ADMIN) {
+	if (comment.UserID != user.ID) && (user.Role != config.USER_ROLE_ADMIN) {
 		c.JSON(http.StatusForbidden, gin.H{"message": "You do not have valid permissions."})
 		return
 	}

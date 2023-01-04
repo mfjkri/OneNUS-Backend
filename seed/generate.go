@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-faker/faker/v4"
 	"github.com/go-faker/faker/v4/pkg/options"
-	"github.com/mfjkri/OneNUS-Backend/controllers"
+	"github.com/mfjkri/OneNUS-Backend/config"
 	"github.com/mfjkri/OneNUS-Backend/database"
 	"github.com/mfjkri/OneNUS-Backend/models"
 	"golang.org/x/crypto/bcrypt"
@@ -82,9 +82,9 @@ func ChooseRandomTag() string {
 
 func GeneratePost(user models.User) models.Post {
 	return models.Post{
-		Title: faker.Sentence(options.WithRandomStringLength(uint(controllers.MAX_POST_TITLE_CHAR))),
+		Title: faker.Sentence(options.WithRandomStringLength(uint(config.MAX_POST_TITLE_CHAR))),
 		Tag:   ChooseRandomTag(),
-		Text:  faker.Paragraph(options.WithRandomStringLength(uint(controllers.MAX_POST_TEXT_CHAR))),
+		Text:  faker.Paragraph(options.WithRandomStringLength(uint(config.MAX_POST_TEXT_CHAR))),
 
 		Author: user.Username,
 		User:   user,
@@ -128,7 +128,7 @@ func GeneratePostsForEachUser(maxPostPerUser int, initialTime time.Time) {
 /* -------------------------------------------------------------------------- */
 func GenerateComment(user models.User, post models.Post) models.Comment {
 	return models.Comment{
-		Text: faker.Paragraph(options.WithRandomStringLength(uint(controllers.MAX_COMMENT_TEXT_CHAR))),
+		Text: faker.Paragraph(options.WithRandomStringLength(uint(config.MAX_COMMENT_TEXT_CHAR))),
 
 		Author: user.Username,
 		User:   user,

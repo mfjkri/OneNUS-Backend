@@ -1,4 +1,4 @@
-package controllers
+package config
 
 import "time"
 
@@ -20,15 +20,15 @@ var MAX_USER_BIO_LENGTH = 100
 /*                                 USER ROLES                                 */
 /* -------------------------------------------------------------------------- */
 const (
-	ADMIN  = "admin"
-	MEMBER = "member"
+	USER_ROLE_ADMIN  = "admin"
+	USER_ROLE_MEMBER = "member"
 )
 
 /* -------------------------------------------------------------------------- */
 /*                               Sorting Options                              */
 /* -------------------------------------------------------------------------- */
 const (
-	ByRecent = "commented_at DESC, id DESC"
-	ByNew    = "created_at  DESC, id DESC"
-	ByHot    = "comments_count DESC, commented_at DESC"
+	SORT_BYRECENT = "commented_at DESC, id DESC"
+	SORT_BYNEW    = "created_at  DESC, id DESC"
+	SORT_BYHOT    = "comments_count DESC, commented_at DESC"
 )

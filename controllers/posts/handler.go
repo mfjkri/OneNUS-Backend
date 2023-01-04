@@ -1,125 +1,18 @@
-package controllers
+package posts
 
 import (
 	"fmt"
-	"math"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mfjkri/OneNUS-Backend/config"
+	"github.com/mfjkri/OneNUS-Backend/controllers/auth"
 	"github.com/mfjkri/OneNUS-Backend/database"
 	"github.com/mfjkri/OneNUS-Backend/models"
 	"github.com/mfjkri/OneNUS-Backend/utils"
-	"gorm.io/gorm"
 )
-
-/* -------------------------------------------------------------------------- */
-/*                              Helper functions                              */
-/* -------------------------------------------------------------------------- */
-func verifyTag(tag string) (valid bool) {
-	valid = false
-	for _, x := range models.ValidTags {
-		if x == tag {
-			valid = true
-		}
-	}
-	return
-}
-
-type PostResponse struct {
-	ID            uint   `json:"id" binding:"required"`
-	Title         string `json:"title" binding:"required"`
-	Tag           string `json:"tag" binding:"required"`
-	Text          string `json:"text" binding:"required"`
-	Author        string `json:"author" binding:"required"`
-	UserID        uint   `json:"userId" binding:"required"`
-	CommentsCount uint   `json:"commentsCount" binding:"required"`
-	CommentedAt   int64  `json:"commentedAt" binding:"required"`
-	StarsCount    uint   `json:"starsCount" binding:"required"`
-	CreatedAt     int64  `json:"createdAt" binding:"required"`
-	UpdatedAt     int64  `json:"updatedAt" binding:"required"`
-}
-
-// Convert a Post Model into a JSON format
-func CreatePostResponse(post *models.Post) PostResponse {
-	return PostResponse{
-		ID:            post.ID,
-		Title:         post.Title,
-		Tag:           post.Tag,
-		Text:          post.Text,
-		Author:        post.Author,
-		UserID:        post.UserID,
-		CommentsCount: post.CommentsCount,
-		CommentedAt:   post.CommentedAt.Unix(),
-		StarsCount:    post.StarsCount,
-		CreatedAt:     post.CreatedAt.Unix(),
-		UpdatedAt:     post.UpdatedAt.Unix(),
-	}
-}
-
-type GetPostsResponse struct {
-	Posts      []PostResponse `json:"posts" binding:"required"`
-	PostsCount int64          `json:"postsCount" binding:"required"`
-}
-
-// Bundles and convert multiple Post models into a JSON format
-func CreatePostsResponse(posts *[]models.Post, totalPostsCount int64) GetPostsResponse {
-	var postsResponse []PostResponse
-	for _, post := range *posts {
-		postReponse := CreatePostResponse(&post)
-		postsResponse = append(postsResponse, postReponse)
-	}
-
-	return GetPostsResponse{
-		Posts:      postsResponse,
-		PostsCount: totalPostsCount,
-	}
-}
-
-// Fetches posts based on provided configuration
-func GetPostsFromContext(dbContext *gorm.DB, perPage uint, pageNumber uint, sortOption string, sortOrder string) ([]models.Post, int64) {
-	var posts []models.Post
-
-	// Limit PerPage to MAX_PER_PAGE
-	clampedPerPage := int64(math.Min(MAX_PER_PAGE, float64(perPage)))
-	offsetPostsCount := int64(pageNumber-1) * clampedPerPage
-
-	// Get total count for Posts
-	var totalPostsCount int64
-	dbContext.Count(&totalPostsCount)
-
-	// If we are request beyond the bounds of total count, error
-	if (offsetPostsCount < 0) || (offsetPostsCount > totalPostsCount) {
-		return posts, 0
-	}
-
-	// Sort Posts by sort option provided (defaults to byNew)
-	defaultSortOption := ByNew
-	if sortOption == "recent" {
-		defaultSortOption = ByRecent
-	} else if sortOption == "hot" {
-		defaultSortOption = ByHot
-	}
-
-	// Fetch Posts from [offsetCount, offsetCount + perPage]
-	// results order depends on SortOption and SortOrder
-	if sortOrder == "ascending" {
-		// Reverse page number based on totalPostsCount
-		leftOverRecords := math.Min(float64(clampedPerPage), float64(totalPostsCount-offsetPostsCount))
-		offsetPostsCount = totalPostsCount - offsetPostsCount - clampedPerPage
-		dbContext.Limit(int(leftOverRecords)).Order(defaultSortOption).Offset(int(offsetPostsCount)).Find(&posts)
-
-		// Reverse the page results for descending order
-		for i, j := 0, len(posts)-1; i < j; i, j = i+1, j-1 {
-			posts[i], posts[j] = posts[j], posts[i]
-		}
-	} else {
-		dbContext.Limit(int(clampedPerPage)).Order(defaultSortOption).Offset(int(offsetPostsCount)).Find(&posts)
-	}
-
-	return posts, totalPostsCount
-}
 
 /* -------------------------------------------------------------------------- */
 /*                            GetPosts | route: ...                           */
@@ -136,7 +29,7 @@ type GetPostsRequest struct {
 
 func GetPosts(c *gin.Context) {
 	// Check that RequestUser is authenticated
-	_, found := VerifyAuth(c)
+	_, found := auth.VerifyAuth(c)
 	if found == false {
 		return
 	}
@@ -152,7 +45,7 @@ func GetPosts(c *gin.Context) {
 
 	// Filter database by UserID (if any)
 	if json.FilterUserID != 0 {
-		targetUser, found := FindUserFromID(c, json.FilterUserID)
+		targetUser, found := auth.FindUserFromID(c, json.FilterUserID)
 		if found == false {
 			return
 		} else {
@@ -181,7 +74,7 @@ type GetPostByIDRequest struct {
 
 func GetPostByID(c *gin.Context) {
 	// Check that RequestUser is authenticated
-	_, found := VerifyAuth(c)
+	_, found := auth.VerifyAuth(c)
 	if found == false {
 		return
 	}
@@ -216,7 +109,7 @@ type CreatePostRequest struct {
 
 func CreatePost(c *gin.Context) {
 	// Check that RequestUser is authenticated
-	user, found := VerifyAuth(c)
+	user, found := auth.VerifyAuth(c)
 	if found == false {
 		return
 	}
@@ -229,9 +122,9 @@ func CreatePost(c *gin.Context) {
 	}
 
 	// Prevent frequent CreatePosts by User
-	timeNow, canCreatePost := utils.CheckTimeIsAfter(user.LastPostAt, USER_POST_COOLDOWN)
+	timeNow, canCreatePost := utils.CheckTimeIsAfter(user.LastPostAt, config.USER_POST_COOLDOWN)
 	if canCreatePost == false {
-		cdLeft := utils.GetCooldownLeft(user.LastPostAt, USER_POST_COOLDOWN, timeNow)
+		cdLeft := utils.GetCooldownLeft(user.LastPostAt, config.USER_POST_COOLDOWN, timeNow)
 		c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("Creating posts too frequently. Please try again in %ds", int(cdLeft.Seconds()))})
 		return
 	}
@@ -251,9 +144,9 @@ func CreatePost(c *gin.Context) {
 
 	// Try to create new Post
 	post := models.Post{
-		Title:         utils.TrimString(strings.TrimSpace(json.Title), MAX_POST_TITLE_CHAR),
+		Title:         utils.TrimString(strings.TrimSpace(json.Title), config.MAX_POST_TITLE_CHAR),
 		Tag:           json.Tag,
-		Text:          utils.TrimString(strings.TrimSpace(json.Text), MAX_POST_TEXT_CHAR),
+		Text:          utils.TrimString(strings.TrimSpace(json.Text), config.MAX_POST_TEXT_CHAR),
 		Author:        user.Username,
 		User:          user,
 		CommentsCount: 0,
@@ -290,7 +183,7 @@ type UpdatePostTextRequest struct {
 
 func UpdatePostText(c *gin.Context) {
 	// Check that RequestUser is authenticated
-	user, found := VerifyAuth(c)
+	user, found := auth.VerifyAuth(c)
 	if found == false {
 		return
 	}
@@ -303,9 +196,9 @@ func UpdatePostText(c *gin.Context) {
 	}
 
 	// Prevent frequent UpdatePostText by User
-	timeNow, canCreatePost := utils.CheckTimeIsAfter(user.LastPostAt, USER_POST_COOLDOWN)
+	timeNow, canCreatePost := utils.CheckTimeIsAfter(user.LastPostAt, config.USER_POST_COOLDOWN)
 	if canCreatePost == false {
-		cdLeft := utils.GetCooldownLeft(user.LastPostAt, USER_POST_COOLDOWN, timeNow)
+		cdLeft := utils.GetCooldownLeft(user.LastPostAt, config.USER_POST_COOLDOWN, timeNow)
 		c.JSON(http.StatusForbidden, gin.H{"message": fmt.Sprintf("Updating posts too frequently. Please try again in %ds", int(cdLeft.Seconds()))})
 		return
 	}
@@ -325,7 +218,7 @@ func UpdatePostText(c *gin.Context) {
 	}
 
 	// Replace Post text and update User LastPostAt
-	post.Text = utils.TrimString(strings.TrimSpace(json.Text), MAX_POST_TEXT_CHAR)
+	post.Text = utils.TrimString(strings.TrimSpace(json.Text), config.MAX_POST_TEXT_CHAR)
 	user.LastPostAt = timeNow
 	database.DB.Save(&post)
 	database.DB.Save(&user)
@@ -345,7 +238,7 @@ type DeletePostRequest struct {
 
 func DeletePost(c *gin.Context) {
 	// Check that RequestUser is authenticated
-	user, found := VerifyAuth(c)
+	user, found := auth.VerifyAuth(c)
 	if found == false {
 		return
 	}
@@ -366,7 +259,7 @@ func DeletePost(c *gin.Context) {
 	}
 
 	// Check User is the author or is admin
-	if (post.UserID != user.ID) && (user.Role != ADMIN) {
+	if (post.UserID != user.ID) && (user.Role != config.USER_ROLE_ADMIN) {
 		c.JSON(http.StatusForbidden, gin.H{"message": "You do not have valid permissions."})
 		return
 	}
