@@ -66,6 +66,6 @@ You can find the frontend that consumes this project [here](https://github.com/m
 
 - [⚡️Technologies](docs/technologies-used.md#%EF%B8%8Ftechnologies)
 - [📦 Models](docs/project-details.md#-models)
-- [🛣️ API Routes](docs/project-details.md#%EF%B8%8F-api-routes)
+- [🛣️ API Endpoints](docs/project-details.md#%EF%B8%8F-api-endpoints)
 - [🗒️ Database](docs/database.md#%EF%B8%8F-database)
 - [🌐 Deployment](docs/deployment.md#-deployment)

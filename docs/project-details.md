@@ -18,30 +18,39 @@ Each of them also inherit from the [base model](../models/base.go) which contain
 
 ![relational-diagram](images/relational-diagram.png)
 
-<br/>
+<br>
 
 # 🛣️ API Endpoints
 
-API routing is split into 2 access-level categories:
+API endpoints can be categorized into 2 access-levels:
 
 1. `public`:
 
-   - Low level access
-   - Routes in this category are defined in [public.go](../routes/public.go)
+   - Does not require user authentication to access
+   - Routes in this category are initialized in [public.go](../routes/public.go)
 
 2. `protected`:
    - Requires user authentication for access (JWT token)
-   - Routes in this category are defined in [protected.go](../routes/protected.go)
+   - Routes in this category are initialized in [protected.go](../routes/protected.go)
 
-Below is a quick reference to all API endpoints defined:
+There are 4 `domains` in this project which define all the available API endpoints.
+
+These domains mirror the 4 [features](https://github.com/mfjkri/OneNUS/blob/master/docs/project-details.md#-features) in our frontend.
+
+- [auth](../controllers/auth/)
+- [posts](../controllers/posts/)
+- [comments](../controllers/comments/)
+- [users](../controllers/users/)
+
+Below is a quick reference to the access level of each domain and the API endpoints they define:
 
 - `auth`:
 
   ```py
-  auth (access-level-mixed)
-  ├── login (public)      # Login of existing account
-  ├── register (public)   # Registration of new account
-  └── me (protected)      # Authenticating an existing session using JWT token
+  auth (public)
+  ├── login       # Login of existing account
+  ├── register    # Registration of new account
+  └── me          # Authenticating an existing session using JWT token
   ```
 
 - `posts`:
@@ -74,18 +83,22 @@ Below is a quick reference to all API endpoints defined:
   └── delete      # Deletes user account
   ```
 
-<br/>
+<br>
 
 # 🎮 Controllers
 
-Each main API path has a dedicated controller to handle requests made to it.
+Each domain has its own controller with the following directory structure:
 
-- `auth`: [auth.go](../controllers/auth.go)
-- `posts`: [posts.go](../controllers/posts.go)
-- `comments`: [comments.go](../controllers/comments.go)
-- `users`: [users.go](../controllers/users.go)
+```sh
+src
+├── routes.go   # Define all the endpoints in the domain
+├── handler.go  # Handler functions for each endpoint
+└── helper.go   # Helper functions used by handler functions
+```
 
-Each handler function has been documented in a consistent style:
+## Handler functions
+
+Each handler function follows a consistent style that is easy to follow when adding more endpoints.
 
 ```go
 type ExpectedRequestTypeForHandler {
@@ -98,7 +111,7 @@ func Handler(c *gin.Context) {
 }
 ```
 
-An example from `CreatePost` handler in [posts.go](../controllers/posts.go):
+An example from `CreatePost` handler in [posts.go](../controllers/posts/handler.go):
 
 ```go
 type CreatePostRequest struct {
@@ -136,5 +149,3 @@ func CreatePost(c *gin.Context) {
 - Meanwhile, all request params for `GET` and `DELETE` requests are included in the URI instead.
 
   `ginContext.ShouldBindJSON` and `ginContext.ShouldBindUri` are used to bind and verify the request params accordingly.
-
-<br/>
