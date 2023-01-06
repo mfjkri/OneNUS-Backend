@@ -22,12 +22,6 @@ func UpdateUsers() {
 		database.DB.Table("comments").Where("user_id = ?", user.ID).Count(&totalCommentsCount)
 		user.CommentsCount = uint(totalCommentsCount)
 
-		if user.Username != "admin" {
-			user.Role = "member"
-		} else {
-			user.Role = "admin"
-		}
-
 		database.DB.Save(&user)
 	}
 	fmt.Println("Update users data complete!")

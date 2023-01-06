@@ -54,9 +54,6 @@ func RegisterUser(c *gin.Context) {
 		LastPostAt:    time.Unix(0, 0),
 		LastCommentAt: time.Unix(0, 0),
 	}
-	if user.Username == "admin" {
-		user.Role = "admin"
-	}
 	new_entry := database.DB.Create(&user)
 
 	// Failed to create entry: most likely user already exists
