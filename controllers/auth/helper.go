@@ -2,7 +2,6 @@ package auth
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mfjkri/OneNUS-Backend/database"
@@ -41,7 +40,7 @@ func VerifyAuth(c *gin.Context) (user models.User, found bool) {
 
 	// Search for User from username
 	var target_user models.User
-	database.DB.Table("users").Where("username = ?", strings.ToLower(username)).First(&target_user)
+	database.DB.Table("users").Where("username = ?", username).First(&target_user)
 	if target_user.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Unauthorized."})
 		return
