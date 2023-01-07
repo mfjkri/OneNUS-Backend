@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -41,8 +42,10 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
+	username_lowered := strings.ToLower(json.Username)
+
 	user := models.User{
-		Username: json.Username,
+		Username: username_lowered,
 		Password: hash,
 		Role:     "member",
 		Bio:      "User has not set their bio.",
@@ -60,7 +63,7 @@ func RegisterUser(c *gin.Context) {
 	}
 
 	// Generate JWT Token
-	jwt, err := utils.GenerateJWT(json.Username)
+	jwt, err := utils.GenerateJWT(username_lowered)
 	if err != nil {
 		c.JSON(http.StatusExpectationFailed, gin.H{"message": "Failed to create access token."})
 		return
@@ -88,9 +91,11 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
+	username_lowered := strings.ToLower(json.Username)
+
 	// Find User based on request.username
 	var user models.User
-	database.DB.Table("users").Where("username = ?", json.Username).First(&user)
+	database.DB.Table("users").Where("username = ?", username_lowered).First(&user)
 	if user.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Username not found."})
 		return
@@ -102,7 +107,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	jwt, err := utils.GenerateJWT(json.Username)
+	jwt, err := utils.GenerateJWT(username_lowered)
 	if err != nil {
 		c.JSON(http.StatusExpectationFailed, gin.H{"message": "Failed to create access token."})
 		return
