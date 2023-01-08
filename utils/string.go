@@ -3,6 +3,8 @@ package utils
 import (
 	"regexp"
 	"unicode"
+
+	"golang.org/x/exp/utf8string"
 )
 
 func ContainsNumbers(s string) bool {
@@ -27,7 +29,7 @@ func ContainsLettersOnly(s string) bool {
 }
 
 func ContainsValidCharactersOnly(s string) bool {
-	return regexp.MustCompile(`^[A-Za-z0-9!@\#$%^&*()\-_=+\\[\]:;'’"? \n.,/“”]+$`).MatchString(s)
+	return utf8string.NewString(s).IsASCII()
 }
 
 func TrimString(s string, maxLen int) string {
